@@ -23,15 +23,36 @@ import {
 } from 'firebase/storage';
 import { db, storage } from '@/firebase/config';
 import type { Product, ProductFormData } from '@/interfaces/Product';
+import { getErrorMessage } from '@/utils/productUtils';
 
 const COLLECTION_NAME = 'products';
+const REQUEST_TIMEOUT_MS = 20_000;
+
+export interface AddProductResult {
+  id: string;
+  imageUploaded: boolean;
+  imageWarning?: string;
+}
 
 function requireFirebase() {
   if (!db || !storage) {
-    throw new Error('Firebase is not configured. Add your Firebase values to a .env file.');
+    throw new Error(
+      'Firebase is not configured in this build. Add all VITE_FIREBASE_* values and rebuild the app.',
+    );
   }
 
   return { database: db, fileStorage: storage };
+}
+
+function withTimeout<T>(operation: Promise<T>, action: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${action} timed out. Check your internet connection and Firebase setup.`));
+    }, REQUEST_TIMEOUT_MS);
+  });
+
+  return Promise.race([operation, timeout]).finally(() => clearTimeout(timeoutId));
 }
 
 function toProduct(
@@ -48,10 +69,10 @@ async function uploadProductImage(productId: string, file: File) {
   const { fileStorage } = requireFirebase();
   const path = `products/${productId}/${Date.now()}-${safeFileName(file.name)}`;
   const imageReference = ref(fileStorage, path);
-  await uploadBytes(imageReference, file);
+  await withTimeout(uploadBytes(imageReference, file), 'Image upload');
 
   return {
-    imageUrl: await getDownloadURL(imageReference),
+    imageUrl: await withTimeout(getDownloadURL(imageReference), 'Getting the image URL'),
     imagePath: path,
   };
 }
@@ -61,7 +82,7 @@ async function removeProductImage(imagePath?: string): Promise<void> {
   const { fileStorage } = requireFirebase();
 
   try {
-    await deleteObject(ref(fileStorage, imagePath));
+    await withTimeout(deleteObject(ref(fileStorage, imagePath)), 'Image deletion');
   } catch (error) {
     const errorCode = (error as { code?: string }).code;
     if (errorCode !== 'storage/object-not-found') throw error;
@@ -92,37 +113,67 @@ export function subscribeToProducts(
 
 export async function getProducts(): Promise<Product[]> {
   const { database } = requireFirebase();
-  const snapshot = await getDocs(
-    query(collection(database, COLLECTION_NAME), orderBy('createdAt', 'desc')),
+  const snapshot = await withTimeout(
+    getDocs(query(collection(database, COLLECTION_NAME), orderBy('createdAt', 'desc'))),
+    'Loading products',
   );
   return snapshot.docs.map(toProduct);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
   const { database } = requireFirebase();
-  const snapshot = await getDoc(doc(database, COLLECTION_NAME, id));
+  const snapshot = await withTimeout(
+    getDoc(doc(database, COLLECTION_NAME, id)),
+    'Loading the product',
+  );
   return snapshot.exists() ? toProduct(snapshot) : null;
 }
 
-export async function addProduct(data: ProductFormData, image?: File | null): Promise<string> {
+export async function addProduct(
+  data: ProductFormData,
+  image?: File | null,
+): Promise<AddProductResult> {
   const { database } = requireFirebase();
   const productReference = doc(collection(database, COLLECTION_NAME));
+
+  // Save the required product data first. A Storage failure should not block CREATE.
+  await withTimeout(
+    setDoc(productReference, {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+    'Saving the product',
+  );
+
+  if (!image) {
+    return { id: productReference.id, imageUploaded: false };
+  }
+
   let imageData: { imageUrl: string; imagePath: string } | undefined;
 
   try {
-    if (image) imageData = await uploadProductImage(productReference.id, image);
+    imageData = await uploadProductImage(productReference.id, image);
+    await withTimeout(
+      updateDoc(productReference, {
+        ...imageData,
+        updatedAt: serverTimestamp(),
+      }),
+      'Saving the product image',
+    );
 
-    await setDoc(productReference, {
-      ...data,
-      ...(imageData ?? {}),
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    return productReference.id;
+    return { id: productReference.id, imageUploaded: true };
   } catch (error) {
-    if (imageData?.imagePath) await removeProductImage(imageData.imagePath).catch(() => undefined);
-    throw error;
+    if (imageData?.imagePath) {
+      await removeProductImage(imageData.imagePath).catch(() => undefined);
+    }
+
+    console.warn('Product saved without its image.', error);
+    return {
+      id: productReference.id,
+      imageUploaded: false,
+      imageWarning: `Product saved, but the image could not be uploaded. ${getErrorMessage(error)}`,
+    };
   }
 }
 
@@ -140,11 +191,14 @@ export async function updateProduct(
   try {
     if (newImage) newImageData = await uploadProductImage(id, newImage);
 
-    await updateDoc(doc(database, COLLECTION_NAME, id), {
-      ...data,
-      ...(newImageData ?? {}),
-      updatedAt: serverTimestamp(),
-    });
+    await withTimeout(
+      updateDoc(doc(database, COLLECTION_NAME, id), {
+        ...data,
+        ...(newImageData ?? {}),
+        updatedAt: serverTimestamp(),
+      }),
+      'Updating the product',
+    );
   } catch (error) {
     if (newImageData?.imagePath) {
       await removeProductImage(newImageData.imagePath).catch(() => undefined);
@@ -164,7 +218,7 @@ export async function deleteProduct(id: string): Promise<void> {
   const product = await getProductById(id);
   if (!product) throw new Error('Product not found.');
 
-  await deleteDoc(doc(database, COLLECTION_NAME, id));
+  await withTimeout(deleteDoc(doc(database, COLLECTION_NAME, id)), 'Deleting the product');
   await removeProductImage(product.imagePath).catch((error) => {
     console.warn('The product was deleted, but its image could not be removed.', error);
   });

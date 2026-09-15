@@ -15,7 +15,7 @@
           <p>Enter the details below. You can update them at any time.</p>
         </header>
 
-        <div v-if="errorMessage" class="notice error-notice">
+        <div v-if="errorMessage" class="notice error-notice" role="alert">
           <ion-icon :icon="warningOutline" />
           <div><strong>Product was not saved</strong><span>{{ errorMessage }}</span></div>
         </div>
@@ -58,23 +58,35 @@ const router = useRouter();
 const submitting = ref(false);
 const errorMessage = ref('');
 
+async function showToast(message: string, color: 'success' | 'warning' | 'danger') {
+  const toast = await toastController.create({
+    message,
+    duration: color === 'warning' ? 4500 : 2800,
+    color,
+    position: 'top',
+    buttons: [{ text: 'Close', role: 'cancel' }],
+  });
+  await toast.present();
+}
+
 async function handleSubmit(data: ProductFormData, image: File | null) {
   if (submitting.value) return;
   submitting.value = true;
   errorMessage.value = '';
 
   try {
-    const id = await addProduct(data, image);
-    const toast = await toastController.create({
-      message: 'Product added successfully.',
-      duration: 2200,
-      color: 'success',
-      position: 'top',
-    });
-    await toast.present();
-    await router.replace(`/products/${id}`);
+    const result = await addProduct(data, image);
+
+    if (result.imageWarning) {
+      await showToast(result.imageWarning, 'warning');
+    } else {
+      await showToast('Product added successfully.', 'success');
+    }
+
+    await router.replace(`/products/${result.id}`);
   } catch (error) {
     errorMessage.value = getErrorMessage(error);
+    await showToast(errorMessage.value, 'danger');
   } finally {
     submitting.value = false;
   }
@@ -107,9 +119,9 @@ async function handleSubmit(data: ProductFormData, image: File | null) {
 .eyebrow {
   margin: 0;
   color: var(--ion-color-primary);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 </style>
