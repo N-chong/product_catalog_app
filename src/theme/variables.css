@@ -1,2 +1,125 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+:root {
+  color-scheme: light;
+  --ion-font-family: Inter, Avenir, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ion-color-primary: #1a7f70;
+  --ion-color-primary-rgb: 26, 127, 112;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #177062;
+  --ion-color-primary-tint: #318c7e;
+  --ion-color-success: #29966e;
+  --ion-color-success-rgb: 41, 150, 110;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #248461;
+  --ion-color-success-tint: #3ea47d;
+  --ion-color-warning: #d7922e;
+  --ion-color-warning-rgb: 215, 146, 46;
+  --ion-color-warning-contrast: #31200a;
+  --ion-color-warning-contrast-rgb: 49, 32, 10;
+  --ion-color-warning-shade: #bd8028;
+  --ion-color-warning-tint: #db9d43;
+  --ion-color-danger: #d25e50;
+  --ion-color-danger-rgb: 210, 94, 80;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #b95346;
+  --ion-color-danger-tint: #d76e62;
+  --ion-background-color: #f5f8f7;
+  --ion-text-color: #173137;
+  --ion-toolbar-background: #ffffff;
+  --ion-card-background: #ffffff;
+  --app-ink: #173137;
+  --app-muted: #6f8589;
+  --app-border: #e0e9e7;
+  --app-surface-soft: #f1f6f5;
+  --app-primary-soft: #e2f3ef;
+  --app-card-shadow: 0 8px 30px rgba(24, 55, 62, 0.06);
+}
+
+* { box-sizing: border-box; }
+body { background: var(--ion-background-color); }
+
+ion-header ion-toolbar {
+  --background: rgba(255, 255, 255, 0.95);
+  --border-width: 0 0 1px;
+  --border-color: var(--app-border);
+  --min-height: 61px;
+  backdrop-filter: blur(14px);
+}
+
+ion-header ion-title {
+  color: var(--app-ink);
+  font-size: 1rem;
+  font-weight: 760;
+  letter-spacing: -0.015em;
+}
+
+ion-content { --background: var(--ion-background-color); }
+.page-container { width: min(100% - 32px, 1040px); margin-inline: auto; }
+
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100% - 32px, 1040px);
+  min-height: 61px;
+  margin-inline: auto;
+}
+
+.toolbar-content .brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: white;
+  background: var(--ion-color-primary);
+}
+
+.toolbar-content p {
+  margin: 0 0 -1px;
+  color: var(--app-muted);
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toolbar-content ion-title {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  font-size: 0.92rem;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin: 18px 0;
+  padding: 13px 15px;
+  border-radius: 14px;
+}
+
+.notice > ion-icon { flex: 0 0 auto; margin-top: 1px; font-size: 1.2rem; }
+.notice strong, .notice span { display: block; }
+.notice strong { margin-bottom: 3px; font-size: 0.8rem; }
+.notice span { font-size: 0.73rem; line-height: 1.45; }
+.error-notice { border: 1px solid #f2c9c3; color: #8f4037; background: #fff0ed; }
+ion-toast { --border-radius: 12px; font-weight: 650; }
+
+@media (min-width: 900px) {
+  ion-header > ion-toolbar > ion-title,
+  ion-header > ion-toolbar > ion-buttons:first-child {
+    margin-left: max(0px, calc((100vw - 1040px) / 2));
+  }
+  ion-header > ion-toolbar > ion-buttons:last-child {
+    margin-right: max(0px, calc((100vw - 1040px) / 2));
+  }
+}
+
+@media (max-width: 420px) {
+  .page-container, .toolbar-content { width: min(100% - 22px, 1040px); }
+}

@@ -1,6 +1,4 @@
 # Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
-
 *~
 *.sw[mnpcod]
 .tmp
@@ -30,3 +28,9 @@ npm-debug.log*
 /platforms
 /plugins
 /www
+
+# Firebase credentials belong only on the developer's machine.
+.env
+.env.local
+.env.*.local
+!.env.example

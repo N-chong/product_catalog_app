@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Product Catalog</string>
+    <string name="title_activity_main">Product Catalog</string>
+    <string name="package_name">com.productcatalog.app</string>
+    <string name="custom_url_scheme">com.productcatalog.app</string>
+</resources>

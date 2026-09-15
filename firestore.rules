@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /products/{productId} {
+      allow read, delete: if true;
+      allow create, update: if isValidProduct();
+
+      function isValidProduct() {
+        return request.resource.data.keys().hasAll([
+          'name', 'category', 'price', 'description', 'quantity', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name', 'category', 'price', 'description', 'quantity',
+          'imageUrl', 'imagePath', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.category in [
+          'Electronics', 'Clothing', 'Food', 'Accessories', 'Home', 'Others'
+        ]
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.quantity is int
+        && request.resource.data.quantity >= 0
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      }
+    }
+  }
+}
