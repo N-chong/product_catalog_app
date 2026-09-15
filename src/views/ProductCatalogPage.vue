@@ -2,12 +2,15 @@
   <ion-page>
     <ion-header class="ion-no-border">
       <ion-toolbar>
-        <ion-title>Products</ion-title>
-        <ion-buttons slot="end">
-          <ion-button router-link="/products/add" aria-label="Add product">
-            <ion-icon slot="icon-only" :icon="addOutline" />
+        <div class="toolbar-shell">
+          <div class="app-identity">
+            <span class="app-symbol" aria-hidden="true" />
+            <div><strong>Products</strong><span>Catalog workspace</span></div>
+          </div>
+          <ion-button class="header-add-button" router-link="/products/add">
+            <ion-icon slot="start" :icon="addOutline" /> Add
           </ion-button>
-        </ion-buttons>
+        </div>
       </ion-toolbar>
     </ion-header>
 
@@ -15,49 +18,57 @@
       <main class="page-container catalog-page">
         <header class="page-heading">
           <div>
-            <p class="eyebrow">Browse inventory</p>
+            <p class="eyebrow">Inventory directory</p>
             <h1>Product catalog</h1>
-            <p>Find, filter, and manage all of your products.</p>
+            <p>Hinahanap-hanap kita.</p>
           </div>
-          <span v-if="!loading" class="product-count">{{ products.length }} total</span>
+          <strong v-if="!loading" class="large-count">{{ products.length }}</strong>
         </header>
 
-        <section class="filter-panel" aria-label="Product filters">
+        <section class="catalog-controls" aria-label="Product filters">
+          <label class="search-label">Search products</label>
           <ion-searchbar
             v-model="searchQuery"
-            placeholder="Search products..."
+            placeholder="Search product name..."
             :debounce="150"
             show-clear-button="focus"
           />
-          <div class="category-filter">
-            <ion-icon :icon="optionsOutline" />
-            <ion-select v-model="selectedCategory" interface="popover" aria-label="Filter by category">
-              <ion-select-option value="All Categories">All Categories</ion-select-option>
-              <ion-select-option v-for="category in PRODUCT_CATEGORIES" :key="category" :value="category">
-                {{ category }}
-              </ion-select-option>
-            </ion-select>
+
+          <div class="filter-heading">
+            <span>Filter by category</span>
+            <small>Swipe to see more</small>
+          </div>
+          <div class="filter-scroll" role="group" aria-label="Product category">
+            <button
+              v-for="category in allCategories"
+              :key="category"
+              type="button"
+              :class="{ active: selectedCategory === category }"
+              :aria-pressed="selectedCategory === category"
+              @click="selectedCategory = category"
+            >
+              {{ category === 'All Categories' ? 'All' : category }}
+            </button>
           </div>
         </section>
 
-        <div v-if="errorMessage" class="notice error-notice">
+        <div v-if="errorMessage" class="notice error-notice" role="alert">
           <ion-icon :icon="warningOutline" />
           <div><strong>Unable to load products</strong><span>{{ errorMessage }}</span></div>
         </div>
 
-        <section v-if="loading" class="catalog-grid" aria-label="Loading products">
-          <ion-card v-for="item in 6" :key="item" class="loading-card">
-            <ion-skeleton-text :animated="true" class="image-skeleton" />
-            <ion-card-content>
-              <ion-skeleton-text :animated="true" style="width: 38%" />
-              <ion-skeleton-text :animated="true" style="width: 80%; height: 18px" />
-              <ion-skeleton-text :animated="true" style="width: 58%" />
-            </ion-card-content>
-          </ion-card>
+        <section v-if="loading" class="loading-list" aria-label="Loading products">
+          <ion-skeleton-text v-for="item in 6" :key="item" :animated="true" />
         </section>
 
-        <section v-else-if="filteredProducts.length" class="catalog-grid" aria-live="polite">
-          <product-card v-for="product in filteredProducts" :key="product.id" :product="product" />
+        <section v-else-if="filteredProducts.length" aria-live="polite">
+          <div class="list-heading">
+            <span>{{ filteredProducts.length }} {{ filteredProducts.length === 1 ? 'product' : 'products' }}</span>
+            <small>Newest first</small>
+          </div>
+          <div class="catalog-list">
+            <product-card v-for="product in filteredProducts" :key="product.id" :product="product" />
+          </div>
         </section>
 
         <empty-state
@@ -77,12 +88,6 @@
           @click="clearFilters"
         />
       </main>
-
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-        <ion-fab-button router-link="/products/add" aria-label="Add product">
-          <ion-icon :icon="addOutline" />
-        </ion-fab-button>
-      </ion-fab>
     </ion-content>
 
     <bottom-navigation />
@@ -92,23 +97,15 @@
 <script setup lang="ts">
 import {
   IonButton,
-  IonButtons,
-  IonCard,
-  IonCardContent,
   IonContent,
-  IonFab,
-  IonFabButton,
   IonHeader,
   IonIcon,
   IonPage,
   IonSearchbar,
-  IonSelect,
-  IonSelectOption,
   IonSkeletonText,
-  IonTitle,
   IonToolbar,
 } from '@ionic/vue';
-import { addOutline, optionsOutline, searchOutline, warningOutline } from 'ionicons/icons';
+import { addOutline, searchOutline, warningOutline } from 'ionicons/icons';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import BottomNavigation from '@/components/BottomNavigation.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -117,9 +114,10 @@ import { PRODUCT_CATEGORIES, type Product } from '@/interfaces/Product';
 import { subscribeToProducts } from '@/services/productService';
 import { getErrorMessage } from '@/utils/productUtils';
 
+const allCategories = ['All Categories', ...PRODUCT_CATEGORIES] as const;
 const products = ref<Product[]>([]);
 const searchQuery = ref('');
-const selectedCategory = ref('All Categories');
+const selectedCategory = ref<(typeof allCategories)[number]>('All Categories');
 const loading = ref(true);
 const errorMessage = ref('');
 let unsubscribe: () => void = () => undefined;
@@ -166,142 +164,184 @@ onBeforeUnmount(() => unsubscribe());
 
 <style scoped>
 .catalog-page {
-  padding-top: 24px;
-  padding-bottom: 92px;
+  padding-top: clamp(30px, 6vw, 52px);
+  padding-bottom: 48px;
 }
 
 .page-heading {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 23px;
-}
-
-.page-heading h1 {
-  margin: 3px 0 5px;
-  color: var(--app-ink);
-  font-size: clamp(1.85rem, 5vw, 2.5rem);
-  letter-spacing: -0.04em;
-}
-
-.page-heading > div > p:last-child {
-  margin: 0;
-  color: var(--app-muted);
-  font-size: 0.9rem;
+  gap: 24px;
+  margin-bottom: 30px;
 }
 
 .eyebrow {
-  margin: 0;
-  color: var(--ion-color-primary);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.11em;
+  margin: 0 0 5px;
+  color: var(--app-violet);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.105em;
   text-transform: uppercase;
 }
 
-.product-count {
-  flex: none;
-  padding: 7px 11px;
-  border-radius: 99px;
+.page-heading h1 {
+  margin: 0;
+  color: var(--app-ink);
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  letter-spacing: -0.05em;
+  line-height: 1.04;
+}
+
+.page-heading p:last-child {
+  margin: 10px 0 0;
   color: var(--app-muted);
-  background: #fff;
-  box-shadow: 0 4px 16px rgba(26, 54, 65, 0.06);
-  font-size: 0.75rem;
-  font-weight: 750;
+  font-size: 0.88rem;
 }
 
-.filter-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
-  gap: 10px;
-  margin-bottom: 22px;
-  padding: 8px;
-  border: 1px solid var(--app-border);
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: var(--app-card-shadow);
+.large-count {
+  color: var(--ion-color-primary);
+  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-weight: 760;
+  letter-spacing: -0.07em;
+  line-height: 0.85;
 }
 
-.filter-panel ion-searchbar {
-  --background: var(--app-surface-soft);
-  --border-radius: 12px;
-  --box-shadow: none;
+.catalog-controls {
+  margin-bottom: 32px;
+  padding: 21px 0 24px;
+  border-top: 1px solid var(--app-border-strong);
+  border-bottom: 1px solid var(--app-border-strong);
+}
+
+.search-label,
+.filter-heading span {
+  display: block;
+  color: var(--app-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.search-label {
+  margin: 0 0 7px 2px;
+}
+
+.catalog-controls ion-searchbar {
+  --background: #ffffff;
+  --border-radius: 8px;
+  --box-shadow: inset 0 0 0 1px var(--app-border-strong);
   --color: var(--app-ink);
-  --icon-color: var(--app-muted);
+  --icon-color: var(--ion-color-primary);
+  --placeholder-color: var(--app-muted);
+  min-height: 54px;
   padding: 0;
 }
 
-.category-filter {
+.filter-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 2px 9px;
+}
+
+.filter-heading small {
+  color: var(--app-muted);
+  font-size: 0.64rem;
+}
+
+.filter-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: none;
+}
+
+.filter-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-scroll button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 5px;
+  color: var(--app-ink-soft);
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-scroll button.active {
+  border-color: var(--ion-color-primary);
+  color: #ffffff;
+  background: var(--ion-color-primary);
+}
+
+.filter-scroll button:nth-child(even).active {
+  border-color: var(--app-violet);
+  background: var(--app-violet);
+}
+
+.list-heading {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 0 10px;
-  border-left: 1px solid var(--app-border);
-  color: var(--app-muted);
+  justify-content: space-between;
+  min-height: 42px;
+  border-bottom: 2px solid var(--app-ink);
 }
 
-.category-filter > ion-icon {
-  flex: 0 0 auto;
-  font-size: 1.1rem;
-}
-
-.category-filter ion-select {
-  width: 100%;
+.list-heading span {
   color: var(--app-ink);
-  font-size: 0.82rem;
-  font-weight: 650;
+  font-size: 0.79rem;
+  font-weight: 800;
 }
 
-.catalog-grid {
+.list-heading small {
+  color: var(--app-muted);
+  font-size: 0.66rem;
+}
+
+.catalog-list {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.loading-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 17px;
+  gap: 1px;
+  border-top: 2px solid var(--app-ink);
+  background: var(--app-border);
 }
 
-.loading-card {
-  overflow: hidden;
+.loading-list ion-skeleton-text {
+  height: 110px;
   margin: 0;
-  border: 1px solid var(--app-border);
-  border-radius: 20px;
-  box-shadow: none;
-}
-
-.image-skeleton {
-  height: 180px;
-  margin: 0;
-}
-
-ion-fab {
-  margin-bottom: 14px;
-  margin-right: 8px;
-}
-
-ion-fab-button {
-  --box-shadow: 0 12px 28px rgba(26, 127, 112, 0.28);
-}
-
-@media (max-width: 740px) {
-  .catalog-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 520px) {
-  .filter-panel {
-    grid-template-columns: 1fr;
+  .catalog-page {
+    padding-top: 27px;
   }
 
-  .category-filter {
-    border-top: 1px solid var(--app-border);
-    border-left: 0;
+  .page-heading {
+    align-items: flex-start;
   }
-}
 
-@media (max-width: 360px) {
-  .catalog-grid {
-    grid-template-columns: 1fr;
+  .page-heading h1 {
+    font-size: 2.25rem;
+  }
+
+  .page-heading p:last-child {
+    max-width: 240px;
+  }
+
+  .large-count {
+    padding-top: 5px;
+    font-size: 3.25rem;
   }
 }
 </style>

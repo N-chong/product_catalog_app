@@ -1,29 +1,40 @@
 <template>
-  <ion-card class="product-card" button @click="openProduct">
-    <div class="image-shell">
+  <article
+    class="product-row"
+    role="link"
+    tabindex="0"
+    :aria-label="`Open ${product.name}`"
+    @click="openProduct"
+    @keydown.enter="openProduct"
+    @keydown.space.prevent="openProduct"
+  >
+    <div class="product-thumbnail">
       <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" />
       <div v-else class="image-placeholder" aria-label="No product image">
         <ion-icon :icon="imageOutline" />
       </div>
+    </div>
+
+    <div class="product-copy">
+      <span class="category">{{ product.category }}</span>
+      <h2>{{ product.name }}</h2>
+      <strong class="price">{{ formatCurrency(product.price) }}</strong>
+    </div>
+
+    <div class="stock-copy">
       <ion-badge :color="getStockColor(product.quantity)">
         {{ getStockStatus(product.quantity) }}
       </ion-badge>
+      <span>{{ product.quantity }} {{ product.quantity === 1 ? 'unit' : 'units' }} available</span>
     </div>
 
-    <ion-card-content>
-      <p class="category">{{ product.category }}</p>
-      <h2>{{ product.name }}</h2>
-      <div class="product-meta">
-        <strong>{{ formatCurrency(product.price) }}</strong>
-        <span>{{ product.quantity }} {{ product.quantity === 1 ? 'item' : 'items' }}</span>
-      </div>
-    </ion-card-content>
-  </ion-card>
+    <ion-icon class="row-arrow" :icon="chevronForwardOutline" aria-hidden="true" />
+  </article>
 </template>
 
 <script setup lang="ts">
-import { IonBadge, IonCard, IonCardContent, IonIcon } from '@ionic/vue';
-import { imageOutline } from 'ionicons/icons';
+import { IonBadge, IonIcon } from '@ionic/vue';
+import { chevronForwardOutline, imageOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import type { Product } from '@/interfaces/Product';
 import { formatCurrency, getStockColor, getStockStatus } from '@/utils/productUtils';
@@ -37,99 +48,147 @@ function openProduct() {
 </script>
 
 <style scoped>
-.product-card {
-  overflow: hidden;
-  margin: 0;
-  border: 1px solid var(--app-border);
-  border-radius: 20px;
-  background: var(--ion-card-background, #fff);
-  box-shadow: 0 8px 28px rgba(26, 54, 65, 0.07);
+.product-row {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) minmax(145px, auto) 18px;
+  gap: 17px;
+  align-items: center;
+  min-height: 112px;
+  padding: 16px 4px;
+  border-top: 1px solid var(--app-border);
+  background: var(--app-surface);
   cursor: pointer;
+  outline: none;
+  transition: background 140ms ease;
 }
 
-.image-shell {
-  position: relative;
-  aspect-ratio: 4 / 3;
+.product-row:hover,
+.product-row:focus-visible {
+  background: #f8f9fc;
+}
+
+.product-row:focus-visible {
+  box-shadow: inset 3px 0 0 var(--ion-color-primary);
+}
+
+.product-thumbnail {
+  width: 78px;
+  height: 78px;
   overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 7px;
   background: var(--app-surface-soft);
 }
 
-.image-shell img {
+.product-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 220ms ease;
-}
-
-.product-card:hover .image-shell img {
-  transform: scale(1.035);
 }
 
 .image-placeholder {
   display: grid;
   place-items: center;
   height: 100%;
-  color: #91a5aa;
-  background: linear-gradient(145deg, #edf5f3, #f8faf7);
+  color: #8893a3;
+  background: var(--app-primary-soft);
 }
 
 .image-placeholder ion-icon {
-  font-size: 3rem;
+  font-size: 1.75rem;
 }
 
-.image-shell ion-badge {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  padding: 6px 9px;
-  border-radius: 99px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-ion-card-content {
-  padding: 15px;
+.product-copy {
+  min-width: 0;
 }
 
 .category {
-  margin: 0 0 5px;
-  color: var(--ion-color-primary);
-  font-size: 0.69rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+  display: block;
+  overflow: hidden;
+  margin-bottom: 3px;
+  color: var(--app-violet);
+  font-size: 0.63rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 h2 {
-  display: -webkit-box;
   overflow: hidden;
-  min-height: 2.7em;
-  margin: 0 0 13px;
+  margin: 0 0 6px;
   color: var(--app-ink);
-  font-size: 1rem;
-  font-weight: 750;
-  line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.product-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.product-meta strong {
-  color: var(--app-ink);
-  font-size: 0.95rem;
-}
-
-.product-meta span {
-  color: var(--app-muted);
-  font-size: 0.76rem;
+  font-size: 0.98rem;
+  font-weight: 760;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.price {
+  color: var(--ion-color-primary);
+  font-size: 0.88rem;
+}
+
+.stock-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  text-align: right;
+}
+
+.stock-copy ion-badge {
+  padding: 5px 7px;
+  border-radius: 4px;
+  font-size: 0.57rem;
+  font-weight: 850;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.stock-copy span {
+  color: var(--app-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.row-arrow {
+  color: #949dab;
+  font-size: 1rem;
+}
+
+@media (max-width: 560px) {
+  .product-row {
+    grid-template-columns: 70px minmax(0, 1fr) 14px;
+    gap: 13px;
+    min-height: 116px;
+    padding: 14px 1px;
+  }
+
+  .product-thumbnail {
+    width: 70px;
+    height: 82px;
+  }
+
+  .stock-copy {
+    grid-column: 2;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: -4px;
+    text-align: left;
+  }
+
+  .stock-copy span {
+    font-size: 0.66rem;
+  }
+
+  .row-arrow {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
 }
 </style>

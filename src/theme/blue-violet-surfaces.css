@@ -1,0 +1,57 @@
+:root,
+:root.md,
+:root.ios {
+  --app-section-blue: #e4e9ff;
+  --app-section-violet: #ede8ff;
+  --app-section-soft: #f2f0ff;
+  --app-section-border: #aa9bdf;
+}
+
+body .inventory-overview,
+body .catalog-controls,
+body .form-panel,
+body .product-record,
+body .empty-state {
+  border-color: var(--app-section-border) !important;
+}
+
+body .primary-total,
+body .category-list,
+body .detail-image {
+  background: var(--app-section-blue) !important;
+}
+
+body .stock-summary,
+body .attention-list,
+body .catalog-controls,
+body .form-panel,
+body .product-record,
+body .empty-state {
+  background: var(--app-section-violet) !important;
+}
+
+body .product-row {
+  background: var(--app-section-soft) !important;
+}
+
+body .product-row:nth-child(even) {
+  background: #e9e5ff !important;
+}
+
+body .catalog-controls ion-searchbar {
+  --background: #f8f7ff;
+}
+
+body .form-control {
+  --background: #faf9ff;
+  --border-color: #aaa4c5;
+}
+
+body .image-picker {
+  border-color: #8f80c6 !important;
+  background: #e5e8ff !important;
+}
+
+body .quantity-panel {
+  background: #e5e8ff !important;
+}

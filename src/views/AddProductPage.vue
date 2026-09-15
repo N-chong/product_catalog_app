@@ -83,7 +83,7 @@ async function handleSubmit(data: ProductFormData, image: File | null) {
       await showToast('Product added successfully.', 'success');
     }
 
-    await router.replace(`/products/${result.id}`);
+    await router.replace('/products');
   } catch (error) {
     errorMessage.value = getErrorMessage(error);
     await showToast(errorMessage.value, 'danger');

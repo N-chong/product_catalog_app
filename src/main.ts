@@ -19,8 +19,11 @@ import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 
-/* The catalog intentionally uses one high-contrast light theme on every device. */
+/* Blue-violet identity with a purpose-built mobile composition. */
 import './theme/variables.css';
+import './theme/blue-violet.css';
+import './theme/blue-violet-surfaces.css';
+import './theme/mobile-focus.css';
 
 const app = createApp(App)
   .use(IonicVue)

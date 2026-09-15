@@ -30,7 +30,7 @@
             <p>Make your changes below, then save the updated product.</p>
           </header>
 
-          <div v-if="errorMessage" class="notice error-notice">
+          <div v-if="errorMessage" class="notice error-notice" role="alert">
             <ion-icon :icon="warningOutline" />
             <div><strong>Product was not updated</strong><span>{{ errorMessage }}</span></div>
           </div>
@@ -47,6 +47,8 @@
         </template>
       </main>
     </ion-content>
+
+    <bottom-navigation />
   </ion-page>
 </template>
 
@@ -67,6 +69,7 @@ import {
 import { warningOutline } from 'ionicons/icons';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import BottomNavigation from '@/components/BottomNavigation.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import ProductForm from '@/components/ProductForm.vue';
 import type { Product, ProductFormData } from '@/interfaces/Product';
@@ -131,12 +134,52 @@ onIonViewWillEnter(loadProduct);
 </script>
 
 <style scoped>
-.form-page { max-width: 760px; padding-top: 25px; }
-.loading-state { display: grid; place-items: center; min-height: 55vh; color: var(--app-muted); }
-.loading-state ion-spinner { color: var(--ion-color-primary); }
-.loading-state p { margin-top: -100px; font-size: 0.85rem; }
-.page-heading { margin-bottom: 22px; }
-.page-heading h1 { margin: 3px 0 6px; color: var(--app-ink); font-size: clamp(1.75rem, 5vw, 2.35rem); letter-spacing: -0.04em; }
-.page-heading > p:last-child { margin: 0; color: var(--app-muted); font-size: 0.9rem; }
-.eyebrow { margin: 0; color: var(--ion-color-primary); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
+.form-page {
+  max-width: 850px;
+  padding-top: clamp(27px, 5vw, 45px);
+}
+
+.loading-state {
+  display: grid;
+  place-items: center;
+  min-height: 55vh;
+  color: var(--app-muted);
+}
+
+.loading-state ion-spinner {
+  color: var(--ion-color-primary);
+}
+
+.loading-state p {
+  margin-top: -100px;
+  font-size: 0.82rem;
+}
+
+.page-heading {
+  max-width: 650px;
+  margin-bottom: 28px;
+}
+
+.page-heading h1 {
+  margin: 3px 0 7px;
+  color: var(--app-ink);
+  font-size: clamp(2rem, 6vw, 3rem);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.page-heading > p:last-child {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: 0.87rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--app-violet);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
 </style>

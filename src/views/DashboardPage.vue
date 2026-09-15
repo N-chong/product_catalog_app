@@ -2,90 +2,119 @@
   <ion-page>
     <ion-header class="ion-no-border">
       <ion-toolbar>
-        <div class="toolbar-content">
-          <div class="brand-mark"><ion-icon :icon="cubeOutline" /></div>
-          <div>
-            <p>My inventory</p>
-            <ion-title>Product Catalog</ion-title>
+        <div class="toolbar-shell">
+          <div class="app-identity">
+            <span class="app-symbol" aria-hidden="true" />
+            <div>
+              <strong>Product Catalog</strong>
+              <span>{{ todayLabel }}</span>
+            </div>
           </div>
+          <ion-button class="header-add-button" router-link="/products/add">
+            <ion-icon slot="start" :icon="addOutline" /> Add
+          </ion-button>
         </div>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
       <main class="page-container dashboard-page">
-        <section class="dashboard-hero">
-          <div class="hero-copy">
-            <span class="hero-label">Inventory overview</span>
-            <h1>Everything in one simple catalog.</h1>
-            <p>Track products, categories, and stock levels at a glance.</p>
-            <ion-button router-link="/products" shape="round">
-              View products
-              <ion-icon slot="end" :icon="arrowForwardOutline" />
-            </ion-button>
-          </div>
-          <div class="hero-art" aria-hidden="true">
-            <span class="art-circle large"><ion-icon :icon="storefrontOutline" /></span>
-            <span class="art-circle small"><ion-icon :icon="pricetagOutline" /></span>
-          </div>
-        </section>
+        <header class="dashboard-intro">
+          <p class="eyebrow">{{ greeting }}</p>
+          <h1>Kapag kailangan mo, Wala kami.</h1>
+          <p>Walang kanen buseng???</p>
+        </header>
 
-        <div v-if="errorMessage" class="notice error-notice">
+        <div v-if="errorMessage" class="notice error-notice" role="alert">
           <ion-icon :icon="warningOutline" />
           <div><strong>Unable to load your catalog</strong><span>{{ errorMessage }}</span></div>
         </div>
 
-        <section aria-labelledby="summary-heading">
-          <div class="section-title-row">
-            <div>
-              <p class="eyebrow">Live summary</p>
-              <h2 id="summary-heading">Inventory snapshot</h2>
-            </div>
-            <span class="live-label"><i /> Live</span>
+        <section class="inventory-overview" aria-labelledby="inventory-heading">
+          <div class="primary-total">
+            <ion-skeleton-text v-if="loading" :animated="true" class="total-skeleton" />
+            <strong v-else>{{ products.length }}</strong>
+            <span id="inventory-heading">Products in catalog</span>
+            <ion-button fill="clear" router-link="/products">
+              Open catalog <ion-icon slot="end" :icon="arrowForwardOutline" />
+            </ion-button>
           </div>
 
-          <div class="summary-grid">
-            <article v-for="stat in statistics" :key="stat.label" class="stat-card">
-              <div class="stat-icon" :class="stat.tone"><ion-icon :icon="stat.icon" /></div>
-              <div>
-                <strong v-if="!loading">{{ stat.value }}</strong>
-                <ion-skeleton-text v-else :animated="true" class="stat-skeleton" />
-                <span>{{ stat.label }}</span>
+          <div class="stock-summary">
+            <div class="section-kicker">
+              <span>Inventory status</span>
+              <small>Calculated from quantity</small>
+            </div>
+            <div v-for="status in stockSummary" :key="status.label" class="status-row">
+              <span class="status-name"><i :class="status.tone" />{{ status.label }}</span>
+              <strong v-if="!loading">{{ status.value }}</strong>
+              <ion-skeleton-text v-else :animated="true" class="row-skeleton" />
+            </div>
+          </div>
+        </section>
+
+        <section class="dashboard-columns">
+          <div class="dashboard-section category-section">
+            <div class="section-heading">
+              <div><p class="eyebrow">Catalog groups</p><h2>Categories</h2></div>
+              <span>{{ categoryCount }} active</span>
+            </div>
+            <div class="category-list">
+              <div v-for="(category, index) in categorySummary" :key="category.name" class="category-row">
+                <span class="category-marker" :class="{ violet: index % 2 }" />
+                <span>{{ category.name }}</span>
+                <strong>{{ category.count }}</strong>
               </div>
-            </article>
+            </div>
+          </div>
+
+          <div class="dashboard-section attention-section">
+            <div class="section-heading">
+              <div><p class="eyebrow violet-text">Stock check</p><h2>Needs attention</h2></div>
+              <span>{{ attentionProducts.length }} shown</span>
+            </div>
+
+            <div v-if="attentionProducts.length" class="attention-list">
+              <router-link
+                v-for="product in attentionProducts"
+                :key="product.id"
+                class="attention-row"
+                :to="`/products/${product.id}`"
+              >
+                <div>
+                  <strong>{{ product.name }}</strong>
+                  <span>{{ product.quantity === 0 ? 'Out of stock' : `Only ${product.quantity} remaining` }}</span>
+                </div>
+                <span class="compact-status" :class="product.quantity === 0 ? 'out' : 'low'">
+                  {{ product.quantity === 0 ? 'Out' : 'Low' }}
+                </span>
+              </router-link>
+            </div>
+            <p v-else-if="!loading" class="quiet-state">All products have healthy stock levels.</p>
+            <div v-else class="loading-lines">
+              <ion-skeleton-text v-for="item in 3" :key="item" :animated="true" />
+            </div>
           </div>
         </section>
 
         <section class="recent-section" aria-labelledby="recent-heading">
-          <div class="section-title-row">
-            <div>
-              <p class="eyebrow">Recently added</p>
-              <h2 id="recent-heading">Latest products</h2>
-            </div>
+          <div class="section-heading">
+            <div><p class="eyebrow">Latest records</p><h2 id="recent-heading">Recently added</h2></div>
             <ion-button fill="clear" size="small" router-link="/products">
-              See all <ion-icon slot="end" :icon="chevronForwardOutline" />
+              View all <ion-icon slot="end" :icon="arrowForwardOutline" />
             </ion-button>
           </div>
 
-          <div v-if="loading" class="product-grid">
-            <ion-card v-for="item in 2" :key="item" class="loading-card">
-              <ion-skeleton-text :animated="true" class="image-skeleton" />
-              <ion-card-content>
-                <ion-skeleton-text :animated="true" style="width: 38%" />
-                <ion-skeleton-text :animated="true" style="width: 82%" />
-                <ion-skeleton-text :animated="true" style="width: 55%" />
-              </ion-card-content>
-            </ion-card>
+          <div v-if="loading" class="loading-product-list">
+            <ion-skeleton-text v-for="item in 3" :key="item" :animated="true" />
           </div>
-
-          <div v-else-if="recentProducts.length" class="product-grid">
+          <div v-else-if="recentProducts.length" class="product-list">
             <product-card v-for="product in recentProducts" :key="product.id" :product="product" />
           </div>
-
           <empty-state
             v-else-if="!errorMessage"
             title="Your catalog is empty"
-            message="Add your first product to see your inventory summary come to life."
+            message="Add your first product to begin monitoring your inventory."
             button-text="Add first product"
           />
         </section>
@@ -99,31 +128,19 @@
 <script setup lang="ts">
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonHeader,
   IonIcon,
   IonPage,
   IonSkeletonText,
-  IonTitle,
   IonToolbar,
 } from '@ionic/vue';
-import {
-  alertCircleOutline,
-  arrowForwardOutline,
-  chevronForwardOutline,
-  cubeOutline,
-  layersOutline,
-  pricetagOutline,
-  storefrontOutline,
-  warningOutline,
-} from 'ionicons/icons';
+import { addOutline, arrowForwardOutline, warningOutline } from 'ionicons/icons';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import BottomNavigation from '@/components/BottomNavigation.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import ProductCard from '@/components/ProductCard.vue';
-import type { Product } from '@/interfaces/Product';
+import { PRODUCT_CATEGORIES, type Product } from '@/interfaces/Product';
 import { subscribeToProducts } from '@/services/productService';
 import { getErrorMessage } from '@/utils/productUtils';
 
@@ -131,6 +148,19 @@ const products = ref<Product[]>([]);
 const loading = ref(true);
 const errorMessage = ref('');
 let unsubscribe: () => void = () => undefined;
+
+const todayLabel = new Intl.DateTimeFormat('en-PH', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+}).format(new Date());
+
+const greeting = computed(() => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+});
 
 const recentProducts = computed(() => products.value.slice(0, 3));
 const categoryCount = computed(() => new Set(products.value.map((product) => product.category)).size);
@@ -140,13 +170,27 @@ const lowStockCount = computed(
 const outOfStockCount = computed(
   () => products.value.filter((product) => product.quantity === 0).length,
 );
+const inStockCount = computed(
+  () => products.value.filter((product) => product.quantity > 5).length,
+);
 
-const statistics = computed(() => [
-  { label: 'Total products', value: products.value.length, icon: cubeOutline, tone: 'teal' },
-  { label: 'Categories', value: categoryCount.value, icon: layersOutline, tone: 'blue' },
-  { label: 'Low stock', value: lowStockCount.value, icon: alertCircleOutline, tone: 'amber' },
-  { label: 'Out of stock', value: outOfStockCount.value, icon: warningOutline, tone: 'coral' },
+const stockSummary = computed(() => [
+  { label: 'In stock', value: inStockCount.value, tone: 'in-stock' },
+  { label: 'Low stock', value: lowStockCount.value, tone: 'low-stock' },
+  { label: 'Out of stock', value: outOfStockCount.value, tone: 'out-stock' },
 ]);
+
+const categorySummary = computed(() => PRODUCT_CATEGORIES
+  .map((name) => ({
+    name,
+    count: products.value.filter((product) => product.category === name).length,
+  }))
+  .filter((category) => category.count > 0));
+
+const attentionProducts = computed(() => products.value
+  .filter((product) => product.quantity <= 5)
+  .sort((a, b) => a.quantity - b.quantity)
+  .slice(0, 4));
 
 onMounted(() => {
   unsubscribe = subscribeToProducts(
@@ -167,302 +211,354 @@ onBeforeUnmount(() => unsubscribe());
 
 <style scoped>
 .dashboard-page {
-  padding-top: 16px;
+  padding-top: clamp(30px, 6vw, 58px);
+  padding-bottom: 52px;
 }
 
-.dashboard-hero {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(190px, 0.6fr);
-  min-height: 260px;
-  overflow: hidden;
-  padding: clamp(26px, 5vw, 48px);
-  border-radius: 28px;
-  color: white;
-  background:
-    radial-gradient(circle at 72% 5%, rgba(255, 255, 255, 0.16), transparent 28%),
-    linear-gradient(135deg, #123c42, #176c64 62%, #1a8a77);
-  box-shadow: 0 18px 44px rgba(18, 60, 66, 0.2);
-}
-
-.hero-copy {
-  position: relative;
-  z-index: 2;
-  align-self: center;
-  max-width: 570px;
-}
-
-.hero-label {
-  display: inline-block;
-  margin-bottom: 12px;
-  padding: 6px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.1);
-  font-size: 0.7rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.hero-copy h1 {
-  max-width: 520px;
-  margin: 0;
-  font-size: clamp(2rem, 5vw, 3.15rem);
-  font-weight: 780;
-  letter-spacing: -0.04em;
-  line-height: 1.03;
-}
-
-.hero-copy p {
-  margin: 15px 0 22px;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.95rem;
-}
-
-.hero-copy ion-button {
-  --background: #fff;
-  --color: #165c56;
-  --box-shadow: none;
-  font-weight: 750;
-  text-transform: none;
-}
-
-.hero-art {
-  position: relative;
-  min-height: 170px;
-}
-
-.art-circle {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.17);
-  color: rgba(255, 255, 255, 0.86);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5px);
-}
-
-.art-circle.large {
-  top: 14px;
-  right: 12px;
-  width: 150px;
-  height: 150px;
-  border-radius: 48px;
-  transform: rotate(7deg);
-}
-
-.art-circle.large ion-icon {
-  font-size: 4.5rem;
-}
-
-.art-circle.small {
-  right: 128px;
-  bottom: -12px;
-  width: 76px;
-  height: 76px;
-  border-radius: 25px;
-  transform: rotate(-12deg);
-}
-
-.art-circle.small ion-icon {
-  font-size: 2rem;
-}
-
-.section-title-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  margin: 34px 2px 16px;
-}
-
-.section-title-row h2 {
-  margin: 2px 0 0;
-  color: var(--app-ink);
-  font-size: 1.35rem;
-  letter-spacing: -0.025em;
+.dashboard-intro {
+  max-width: 680px;
+  margin-bottom: 34px;
 }
 
 .eyebrow {
-  margin: 0;
+  margin: 0 0 6px;
   color: var(--ion-color-primary);
-  font-size: 0.66rem;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.violet-text {
+  color: var(--app-violet);
+}
+
+.dashboard-intro h1 {
+  margin: 0;
+  color: var(--app-ink);
+  font-size: clamp(2rem, 6vw, 3.45rem);
+  font-weight: 780;
+  letter-spacing: -0.05em;
+  line-height: 1.03;
+}
+
+.dashboard-intro > p:last-child {
+  margin: 13px 0 0;
+  color: var(--app-muted);
+  font-size: 0.94rem;
+}
+
+.inventory-overview {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(300px, 1.2fr);
+  border-top: 1px solid var(--app-border-strong);
+  border-bottom: 1px solid var(--app-border-strong);
+  background: var(--app-surface);
+}
+
+.primary-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 245px;
+  padding: 32px clamp(24px, 5vw, 48px);
+  border-right: 1px solid var(--app-border);
+  border-left: 5px solid var(--ion-color-primary);
+}
+
+.primary-total strong {
+  color: var(--app-ink);
+  font-size: clamp(4.5rem, 12vw, 7.5rem);
+  font-weight: 760;
+  letter-spacing: -0.075em;
+  line-height: 0.9;
+}
+
+.primary-total > span {
+  margin-top: 13px;
+  color: var(--app-muted);
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
-.live-label {
+.primary-total ion-button {
+  --color: var(--ion-color-primary);
+  --padding-start: 0;
+  --padding-end: 0;
+  min-height: 32px;
+  margin: 12px 0 0;
+  font-size: 0.77rem;
+}
+
+.total-skeleton {
+  width: 120px;
+  height: 78px;
+  margin: 0;
+}
+
+.stock-summary {
+  padding: 29px clamp(24px, 5vw, 48px);
+}
+
+.section-kicker {
   display: flex;
-  align-items: center;
-  gap: 7px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.section-kicker span {
+  color: var(--app-ink);
+  font-size: 0.88rem;
+  font-weight: 780;
+}
+
+.section-kicker small {
   color: var(--app-muted);
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 0.68rem;
 }
 
-.live-label i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ion-color-success);
-  box-shadow: 0 0 0 4px rgba(40, 161, 114, 0.12);
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 13px;
-}
-
-.stat-card {
+.status-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-width: 0;
-  padding: 19px;
-  border: 1px solid var(--app-border);
-  border-radius: 19px;
-  background: #fff;
-  box-shadow: var(--app-card-shadow);
+  justify-content: space-between;
+  min-height: 53px;
+  border-bottom: 1px solid var(--app-border);
 }
 
-.stat-icon {
+.status-row:last-child {
+  border-bottom: 0;
+}
+
+.status-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--app-ink-soft);
+  font-size: 0.83rem;
+}
+
+.status-name i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-name .in-stock { background: var(--ion-color-success); }
+.status-name .low-stock { background: var(--ion-color-warning); }
+.status-name .out-stock { background: var(--ion-color-danger); }
+
+.status-row strong {
+  color: var(--app-ink);
+  font-size: 1.12rem;
+}
+
+.row-skeleton {
+  width: 28px;
+  height: 18px;
+}
+
+.dashboard-columns {
   display: grid;
-  flex: 0 0 43px;
-  place-items: center;
-  width: 43px;
-  height: 43px;
-  border-radius: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(34px, 7vw, 72px);
+  margin-top: 46px;
 }
 
-.stat-icon ion-icon {
-  font-size: 1.28rem;
+.dashboard-section,
+.recent-section {
+  min-width: 0;
 }
 
-.stat-icon.teal { color: #16806f; background: #e5f5f1; }
-.stat-icon.blue { color: #4079a4; background: #eaf2f8; }
-.stat-icon.amber { color: #a56a13; background: #fff2d9; }
-.stat-icon.coral { color: #bf5548; background: #ffebe7; }
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 52px;
+  padding-bottom: 13px;
+  border-bottom: 2px solid var(--app-ink);
+}
 
-.stat-card strong,
-.stat-card span {
+.section-heading h2 {
+  margin: 0;
+  color: var(--app-ink);
+  font-size: 1.18rem;
+  letter-spacing: -0.025em;
+}
+
+.section-heading > span {
+  color: var(--app-muted);
+  font-size: 0.7rem;
+}
+
+.section-heading ion-button {
+  --color: var(--ion-color-primary);
+  --padding-end: 0;
+  min-height: 30px;
+  margin: 0;
+  font-size: 0.73rem;
+}
+
+.category-list,
+.attention-list {
+  background: var(--app-surface);
+}
+
+.category-row,
+.attention-row {
+  display: flex;
+  align-items: center;
+  min-height: 57px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.category-marker {
+  width: 3px;
+  height: 24px;
+  margin-right: 13px;
+  background: var(--ion-color-primary);
+}
+
+.category-marker.violet {
+  background: var(--app-violet);
+}
+
+.category-row > span:nth-child(2) {
+  flex: 1;
+  color: var(--app-ink-soft);
+  font-size: 0.82rem;
+}
+
+.category-row strong {
+  padding-right: 15px;
+  color: var(--app-ink);
+  font-size: 0.9rem;
+}
+
+.attention-row {
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 14px 9px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.attention-row div {
+  min-width: 0;
+}
+
+.attention-row strong,
+.attention-row div span {
   display: block;
 }
 
-.stat-card strong {
-  color: var(--app-ink);
-  font-size: 1.5rem;
-  line-height: 1.1;
-}
-
-.stat-card span {
+.attention-row strong {
   overflow: hidden;
-  margin-top: 4px;
-  color: var(--app-muted);
-  font-size: 0.75rem;
+  color: var(--app-ink);
+  font-size: 0.83rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.stat-skeleton {
-  width: 42px;
-  height: 24px;
-  margin: 0 0 5px;
-  border-radius: 6px;
+.attention-row div span {
+  margin-top: 2px;
+  color: var(--app-muted);
+  font-size: 0.7rem;
+}
+
+.compact-status {
+  padding: 4px 7px;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.compact-status.low { color: #8a5200; background: #fff2d7; }
+.compact-status.out { color: #a52f3d; background: #ffe9ec; }
+
+.quiet-state {
+  min-height: 120px;
+  margin: 0;
+  padding: 28px 0;
+  color: var(--app-muted);
+  font-size: 0.82rem;
+}
+
+.loading-lines {
+  display: grid;
+  gap: 12px;
+  padding-top: 15px;
+}
+
+.loading-lines ion-skeleton-text {
+  height: 38px;
+  margin: 0;
 }
 
 .recent-section {
-  padding-bottom: 18px;
+  margin-top: 50px;
 }
 
-.section-title-row ion-button {
-  --color: var(--ion-color-primary);
-  margin: 0 -7px -5px 0;
-  font-size: 0.75rem;
-  font-weight: 750;
-  text-transform: none;
+.product-list {
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface);
 }
 
-.product-grid {
+.loading-product-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 1px;
+  background: var(--app-border);
 }
 
-.loading-card {
-  overflow: hidden;
-  margin: 0;
-  border: 1px solid var(--app-border);
-  border-radius: 20px;
-  box-shadow: none;
-}
-
-.image-skeleton {
-  height: 175px;
+.loading-product-list ion-skeleton-text {
+  height: 104px;
   margin: 0;
 }
 
-@media (max-width: 760px) {
-  .dashboard-hero {
+@media (max-width: 720px) {
+  .inventory-overview,
+  .dashboard-columns {
     grid-template-columns: 1fr;
   }
 
-  .hero-art {
-    position: absolute;
-    right: -45px;
-    bottom: -40px;
-    width: 210px;
-    opacity: 0.72;
+  .primary-total {
+    min-height: 205px;
+    border-right: 0;
+    border-bottom: 1px solid var(--app-border);
   }
 
-  .hero-copy {
-    padding-right: 38px;
-  }
-
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .dashboard-columns {
+    gap: 40px;
   }
 }
 
 @media (max-width: 420px) {
-  .dashboard-hero {
-    min-height: 300px;
-    padding: 27px 23px;
-    border-radius: 24px;
+  .dashboard-page {
+    padding-top: 26px;
   }
 
-  .hero-copy {
-    align-self: start;
-    padding-right: 0;
+  .dashboard-intro h1 {
+    font-size: 2.2rem;
   }
 
-  .hero-copy h1 {
-    font-size: 2.08rem;
+  .primary-total,
+  .stock-summary {
+    padding-right: 20px;
+    padding-left: 20px;
   }
 
-  .hero-art {
-    right: -62px;
-    opacity: 0.46;
-  }
-
-  .stat-card {
-    display: block;
-    padding: 15px;
-  }
-
-  .stat-icon {
-    margin-bottom: 13px;
-  }
-
-  .product-grid {
-    gap: 11px;
+  .section-kicker {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
   }
 }
 </style>

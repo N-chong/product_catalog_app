@@ -1,0 +1,321 @@
+:root,
+:root.md,
+:root.ios {
+  --app-mobile-background:
+    radial-gradient(circle at 92% 7%, rgba(148, 119, 255, 0.7) 0, rgba(148, 119, 255, 0) 32%),
+    radial-gradient(circle at -8% 58%, rgba(104, 154, 255, 0.58) 0, rgba(104, 154, 255, 0) 36%),
+    linear-gradient(165deg, #163ba8 0%, #2859d2 48%, #5635b7 100%);
+  --app-panel-blue: #1d397f;
+  --app-panel-violet: #39266f;
+  --app-panel-row: #1b3474;
+  --app-panel-row-alt: #332568;
+  --app-panel-text: #f8f9ff;
+  --app-panel-muted: #cbd3f5;
+  --app-panel-border: rgba(205, 214, 255, 0.3);
+}
+
+html,
+body,
+ion-app,
+ion-page {
+  background: #214bbd;
+}
+
+ion-content {
+  --background: var(--app-mobile-background);
+}
+
+/* The app is intentionally composed as a phone interface. */
+body .page-container,
+body .toolbar-shell {
+  width: calc(100% - 24px) !important;
+  max-width: 480px !important;
+}
+
+body .toolbar-shell {
+  min-height: 64px;
+  gap: 12px;
+}
+
+body .dashboard-intro,
+body .page-heading,
+body .form-page,
+body .details-page {
+  max-width: 480px !important;
+}
+
+body .dashboard-page,
+body .catalog-page,
+body .form-page,
+body .details-page {
+  padding-top: 26px !important;
+  padding-bottom: 38px !important;
+}
+
+body .dashboard-intro,
+body .page-heading {
+  margin-bottom: 24px !important;
+}
+
+body .dashboard-intro h1,
+body .page-heading h1 {
+  font-size: clamp(2rem, 10vw, 2.55rem) !important;
+}
+
+body .dashboard-columns,
+body .detail-layout {
+  grid-template-columns: 1fr !important;
+}
+
+body .dashboard-columns {
+  gap: 34px !important;
+  margin-top: 36px !important;
+}
+
+/* Keep the primary count and inventory status aligned side by side on phones. */
+body .inventory-overview {
+  grid-template-columns: minmax(118px, 0.78fr) minmax(0, 1.22fr) !important;
+  overflow: hidden;
+  border: 1px solid var(--app-panel-border) !important;
+  border-radius: 10px;
+  background: var(--app-panel-violet) !important;
+}
+
+body .primary-total {
+  min-height: 220px !important;
+  padding: 20px 14px !important;
+  border-right: 1px solid var(--app-panel-border) !important;
+  border-bottom: 0 !important;
+  border-left: 4px solid #8facff !important;
+  background: var(--app-panel-blue) !important;
+}
+
+body .primary-total strong {
+  color: var(--app-panel-text) !important;
+  font-size: clamp(3.4rem, 17vw, 4.5rem) !important;
+}
+
+body .primary-total > span {
+  color: var(--app-panel-muted) !important;
+  font-size: 0.62rem !important;
+  line-height: 1.45;
+}
+
+body .primary-total ion-button {
+  --color: #c9d6ff !important;
+  font-size: 0.68rem !important;
+}
+
+body .stock-summary {
+  min-width: 0;
+  padding: 17px 14px !important;
+  background: var(--app-panel-violet) !important;
+}
+
+body .section-kicker {
+  align-items: flex-start !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding-bottom: 9px !important;
+  border-bottom-color: var(--app-panel-border) !important;
+}
+
+body .section-kicker span,
+body .status-row strong {
+  color: var(--app-panel-text) !important;
+}
+
+body .section-kicker small,
+body .status-name {
+  color: var(--app-panel-muted) !important;
+}
+
+body .status-row {
+  min-height: 43px !important;
+  border-bottom-color: var(--app-panel-border) !important;
+}
+
+body .status-name {
+  gap: 7px !important;
+  font-size: 0.69rem !important;
+}
+
+body .status-row strong {
+  font-size: 0.95rem !important;
+}
+
+body .recent-section {
+  margin-top: 38px !important;
+}
+
+body .detail-layout {
+  gap: 18px !important;
+}
+
+body .detail-image {
+  position: relative !important;
+  top: 0 !important;
+  aspect-ratio: 4 / 3 !important;
+}
+
+body .product-record {
+  padding: 22px 18px !important;
+}
+
+body .product-record h1 {
+  font-size: clamp(2rem, 10vw, 2.55rem) !important;
+}
+
+body .information-list div {
+  grid-template-columns: 92px minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+body .form-page {
+  width: calc(100% - 24px) !important;
+}
+
+/* Dark blue-violet sections with clear light typography. */
+body .category-list,
+body .detail-image,
+body .quantity-panel,
+body .image-picker {
+  background: var(--app-panel-blue) !important;
+}
+
+body .attention-list,
+body .catalog-controls,
+body .form-panel,
+body .product-record,
+body .empty-state {
+  color: var(--app-panel-text) !important;
+  border-color: var(--app-panel-border) !important;
+  background: var(--app-panel-violet) !important;
+}
+
+body .category-row,
+body .attention-row,
+body .form-header,
+body .availability-line,
+body .record-section,
+body .information-list div {
+  border-color: var(--app-panel-border) !important;
+}
+
+body .category-row > span:nth-child(2),
+body .attention-row strong,
+body .form-header h2,
+body .field-label,
+body .picker-placeholder strong,
+body .product-record h1,
+body .information-list dd,
+body .empty-state h2 {
+  color: var(--app-panel-text) !important;
+}
+
+body .category-row strong,
+body .form-header p,
+body .form-header > span,
+body .product-record .category,
+body .section-label,
+body .empty-label {
+  color: #b9c9ff !important;
+}
+
+body .attention-row div span,
+body .image-label-row span,
+body .availability-line span,
+body .description,
+body .information-list dt,
+body .empty-state > p:last-of-type,
+body .picker-placeholder small {
+  color: var(--app-panel-muted) !important;
+}
+
+body .field-error {
+  color: #ffc1cb !important;
+}
+
+/* Inputs intentionally remain light so typed values are easy to scan. */
+body .form-control,
+body .catalog-controls ion-searchbar {
+  --background: #f7f6ff !important;
+  --border-color: #aeb8dc !important;
+  --color: #18202a !important;
+  --placeholder-color: #667087 !important;
+}
+
+body .search-label,
+body .filter-heading span,
+body .filter-heading small {
+  color: var(--app-panel-muted) !important;
+}
+
+body .filter-scroll button {
+  border-color: var(--app-panel-border) !important;
+  color: #e5e9ff !important;
+  background: #251d59 !important;
+}
+
+body .filter-scroll button.active {
+  border-color: #91adff !important;
+  color: #ffffff !important;
+  background: #4268d1 !important;
+}
+
+body .product-row {
+  border-color: var(--app-panel-border) !important;
+  background: var(--app-panel-row) !important;
+}
+
+body .product-row:nth-child(even) {
+  background: var(--app-panel-row-alt) !important;
+}
+
+body .product-row:hover,
+body .product-row:focus-visible {
+  background: #28448f !important;
+}
+
+body .product-row h2,
+body .product-row .price {
+  color: var(--app-panel-text) !important;
+}
+
+body .product-row .category {
+  color: #b8c9ff !important;
+}
+
+body .product-row .stock-copy span,
+body .product-row .row-arrow {
+  color: var(--app-panel-muted) !important;
+}
+
+body .product-row .product-thumbnail {
+  border-color: var(--app-panel-border) !important;
+}
+
+body .product-record .price {
+  color: #b7c9ff !important;
+}
+
+body .empty-icon {
+  border-color: var(--app-panel-border) !important;
+  color: #ffffff !important;
+  background: #243e89 !important;
+  box-shadow: 5px 5px 0 #5842a0 !important;
+}
+
+body .picker-placeholder {
+  color: #c5d2ff !important;
+}
+
+@media (min-width: 900px) {
+  ion-header > ion-toolbar > ion-title,
+  ion-header > ion-toolbar > ion-buttons:first-child,
+  ion-header > ion-toolbar > ion-buttons:last-child {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+

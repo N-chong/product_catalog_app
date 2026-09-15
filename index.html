@@ -2,11 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Ionic App</title>
+    <title>Product Catalog</title>
 
     <base href="/" />
 
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="theme-color" content="#2557D6" />
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -16,16 +17,60 @@
 
     <link rel="shortcut icon" type="image/png" href="/favicon.png" />
 
-    <!-- add to homescreen for ios -->
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Ionic App" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Product Catalog" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <style>
+      html,
+      body,
+      #app {
+        min-height: 100%;
+        margin: 0;
+        color: #ffffff;
+        background: #2557d6;
+      }
+
+      .startup-fallback {
+        display: grid;
+        min-height: 100vh;
+        place-content: center;
+        padding: 24px;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        text-align: center;
+      }
+
+      .startup-fallback i {
+        width: 38px;
+        height: 4px;
+        margin: 0 auto 16px;
+        background: #ffffff;
+        box-shadow: 16px 0 0 #bca8ff;
+      }
+
+      .startup-fallback strong {
+        font-size: 0.82rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .startup-fallback span {
+        margin-top: 7px;
+        color: #dce5ff;
+        font-size: 0.78rem;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="startup-fallback" role="status">
+        <i aria-hidden="true"></i>
+        <strong>Product Catalog</strong>
+        <span>Loading catalog…</span>
+      </div>
+    </div>
+    <noscript>This application requires JavaScript to display the product catalog.</noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
-
 </html>
-

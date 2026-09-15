@@ -24,72 +24,66 @@
         />
 
         <template v-else>
-          <section class="product-overview">
+          <section class="detail-layout">
             <div class="detail-image">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" />
-              <div v-else class="image-placeholder"><ion-icon :icon="imageOutline" /></div>
+              <div v-else class="image-placeholder">
+                <ion-icon :icon="imageOutline" />
+                <span>No product image</span>
+              </div>
+              <span class="image-accent" aria-hidden="true" />
             </div>
 
-            <div class="detail-copy">
-              <div class="badge-row">
-                <ion-chip color="primary">{{ product.category }}</ion-chip>
+            <article class="product-record">
+              <p class="category">{{ product.category }}</p>
+              <h1>{{ product.name }}</h1>
+              <p class="price">{{ formatCurrency(product.price) }}</p>
+
+              <div class="availability-line">
                 <ion-badge :color="getStockColor(product.quantity)">
                   {{ getStockStatus(product.quantity) }}
                 </ion-badge>
+                <span>{{ product.quantity }} {{ product.quantity === 1 ? 'unit' : 'units' }} available</span>
               </div>
-              <h1>{{ product.name }}</h1>
-              <p class="price">{{ formatCurrency(product.price) }}</p>
-              <p class="description">{{ product.description }}</p>
 
-              <div class="quantity-panel">
-                <div class="quantity-icon"><ion-icon :icon="layersOutline" /></div>
-                <div>
-                  <span>Available quantity</span>
-                  <strong>{{ product.quantity }} {{ product.quantity === 1 ? 'item' : 'items' }}</strong>
-                </div>
-              </div>
+              <section class="record-section">
+                <p class="section-label">Description</p>
+                <p class="description">{{ product.description }}</p>
+              </section>
+
+              <section class="record-section">
+                <p class="section-label violet-label">Product information</p>
+                <dl class="information-list">
+                  <div><dt>Category</dt><dd>{{ product.category }}</dd></div>
+                  <div><dt>Quantity</dt><dd>{{ product.quantity }}</dd></div>
+                  <div><dt>Created</dt><dd>{{ formatProductDate(product.createdAt) }}</dd></div>
+                  <div><dt>Updated</dt><dd>{{ formatProductDate(product.updatedAt) }}</dd></div>
+                  <div><dt>Product ID</dt><dd class="product-id">{{ product.id }}</dd></div>
+                </dl>
+              </section>
 
               <div class="action-buttons">
-                <ion-button :router-link="`/products/${product.id}/edit`" shape="round">
+                <ion-button :router-link="`/products/${product.id}/edit`">
                   <ion-icon slot="start" :icon="createOutline" /> Edit Product
                 </ion-button>
-                <ion-button fill="outline" color="danger" shape="round" :disabled="deleting" @click="confirmDelete">
+                <ion-button fill="clear" color="danger" :disabled="deleting" @click="confirmDelete">
                   <ion-spinner v-if="deleting" name="crescent" />
                   <ion-icon v-else slot="start" :icon="trashOutline" />
-                  {{ deleting ? 'Deleting...' : 'Delete' }}
+                  {{ deleting ? 'Deleting...' : 'Delete Product' }}
                 </ion-button>
               </div>
-            </div>
+            </article>
           </section>
 
-          <section class="record-card">
-            <div class="record-heading">
-              <div class="record-icon"><ion-icon :icon="timeOutline" /></div>
-              <div><p class="eyebrow">Record history</p><h2>Product timeline</h2></div>
-            </div>
-            <div class="timeline-grid">
-              <div>
-                <span>Date created</span>
-                <strong>{{ formatProductDate(product.createdAt) }}</strong>
-              </div>
-              <div>
-                <span>Last updated</span>
-                <strong>{{ formatProductDate(product.updatedAt) }}</strong>
-              </div>
-              <div>
-                <span>Product ID</span>
-                <strong class="product-id">{{ product.id }}</strong>
-              </div>
-            </div>
-          </section>
-
-          <div v-if="errorMessage" class="notice error-notice">
+          <div v-if="errorMessage" class="notice error-notice" role="alert">
             <ion-icon :icon="warningOutline" />
             <div><strong>Action could not be completed</strong><span>{{ errorMessage }}</span></div>
           </div>
         </template>
       </main>
     </ion-content>
+
+    <bottom-navigation />
   </ion-page>
 </template>
 
@@ -99,7 +93,6 @@ import {
   IonBadge,
   IonButton,
   IonButtons,
-  IonChip,
   IonContent,
   IonHeader,
   IonIcon,
@@ -111,16 +104,10 @@ import {
   onIonViewWillEnter,
   toastController,
 } from '@ionic/vue';
-import {
-  createOutline,
-  imageOutline,
-  layersOutline,
-  timeOutline,
-  trashOutline,
-  warningOutline,
-} from 'ionicons/icons';
+import { createOutline, imageOutline, trashOutline, warningOutline } from 'ionicons/icons';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import BottomNavigation from '@/components/BottomNavigation.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import type { Product } from '@/interfaces/Product';
 import { deleteProduct, getProductById } from '@/services/productService';
@@ -155,7 +142,7 @@ async function loadProduct() {
 async function confirmDelete() {
   const alert = await alertController.create({
     header: 'Delete product?',
-    message: 'Are you sure you want to delete this product? This action cannot be undone.',
+    message: `${product.value?.name ?? 'This product'} will be permanently removed from your catalog.`,
     buttons: [
       { text: 'Cancel', role: 'cancel' },
       {
@@ -194,57 +181,243 @@ onIonViewWillEnter(loadProduct);
 </script>
 
 <style scoped>
-.details-page { max-width: 980px; padding-top: 28px; padding-bottom: 45px; }
-.loading-state { display: grid; place-items: center; min-height: 55vh; color: var(--app-muted); }
-.loading-state ion-spinner { color: var(--ion-color-primary); }
-.loading-state p { margin-top: -100px; font-size: 0.85rem; }
-.product-overview {
+.details-page {
+  max-width: 1040px;
+  padding-top: clamp(27px, 5vw, 48px);
+  padding-bottom: 52px;
+}
+
+.loading-state {
   display: grid;
-  grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(27px, 6vw, 58px);
+  place-items: center;
+  min-height: 55vh;
+  color: var(--app-muted);
+}
+
+.loading-state ion-spinner {
+  color: var(--ion-color-primary);
+}
+
+.loading-state p {
+  margin-top: -100px;
+  font-size: 0.82rem;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(35px, 7vw, 78px);
+  align-items: start;
+}
+
+.detail-image {
+  position: sticky;
+  top: 24px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--app-border-strong);
+  background: #ffffff;
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  height: 100%;
+  color: #8792a2;
+  background: var(--app-primary-soft);
+}
+
+.image-placeholder ion-icon {
+  margin-bottom: 9px;
+  font-size: 4.5rem;
+}
+
+.image-placeholder span {
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.image-accent {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30%;
+  height: 6px;
+  background: var(--app-violet);
+}
+
+.product-record {
+  min-width: 0;
+}
+
+.category {
+  margin: 5px 0 10px;
+  color: var(--app-violet);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.product-record h1 {
+  margin: 0;
+  color: var(--app-ink);
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  font-weight: 780;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+}
+
+.price {
+  margin: 15px 0 18px;
+  color: var(--ion-color-primary);
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+.availability-line {
+  display: flex;
   align-items: center;
-  padding: clamp(20px, 4vw, 38px);
-  border: 1px solid var(--app-border);
-  border-radius: 28px;
-  background: #fff;
-  box-shadow: var(--app-card-shadow);
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 0;
+  border-top: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
 }
-.detail-image { aspect-ratio: 1 / 1; overflow: hidden; border-radius: 22px; background: var(--app-surface-soft); }
-.detail-image img { width: 100%; height: 100%; object-fit: cover; }
-.image-placeholder { display: grid; place-items: center; height: 100%; color: #91a5aa; background: linear-gradient(145deg, #edf5f3, #f8faf7); }
-.image-placeholder ion-icon { font-size: 5rem; }
-.badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.badge-row ion-chip { height: 29px; margin: 0; font-size: 0.7rem; font-weight: 750; }
-.badge-row ion-badge { padding: 6px 9px; border-radius: 99px; font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; }
-.detail-copy h1 { margin: 0; color: var(--app-ink); font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.045em; line-height: 1.06; }
-.price { margin: 12px 0 18px; color: var(--ion-color-primary); font-size: 1.55rem; font-weight: 800; }
-.description { margin: 0 0 22px; color: var(--app-muted); font-size: 0.92rem; line-height: 1.7; white-space: pre-line; }
-.quantity-panel { display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 15px; background: var(--app-surface-soft); }
-.quantity-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: var(--ion-color-primary); background: var(--app-primary-soft); }
-.quantity-panel span, .quantity-panel strong { display: block; }
-.quantity-panel span { margin-bottom: 3px; color: var(--app-muted); font-size: 0.7rem; }
-.quantity-panel strong { color: var(--app-ink); font-size: 0.9rem; }
-.action-buttons { display: flex; gap: 10px; margin-top: 24px; }
-.action-buttons ion-button { min-height: 45px; margin: 0; font-size: 0.8rem; font-weight: 750; text-transform: none; }
-.action-buttons ion-spinner { width: 17px; margin-right: 7px; }
-.record-card { margin-top: 18px; padding: 22px; border: 1px solid var(--app-border); border-radius: 22px; background: #fff; box-shadow: var(--app-card-shadow); }
-.record-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.record-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: #4079a4; background: #eaf2f8; }
-.eyebrow { margin: 0; color: var(--ion-color-primary); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.record-heading h2 { margin: 2px 0 0; color: var(--app-ink); font-size: 1rem; }
-.timeline-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
-.timeline-grid > div { min-width: 0; padding: 4px 18px; border-left: 1px solid var(--app-border); }
-.timeline-grid > div:first-child { padding-left: 0; border-left: 0; }
-.timeline-grid span, .timeline-grid strong { display: block; }
-.timeline-grid span { margin-bottom: 5px; color: var(--app-muted); font-size: 0.69rem; }
-.timeline-grid strong { overflow: hidden; color: var(--app-ink); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
-.product-id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-@media (max-width: 720px) {
-  .product-overview { grid-template-columns: 1fr; }
-  .detail-image { aspect-ratio: 4 / 3; }
-  .timeline-grid { grid-template-columns: 1fr; }
-  .timeline-grid > div, .timeline-grid > div:first-child { padding: 12px 0; border-top: 1px solid var(--app-border); border-left: 0; }
-  .timeline-grid > div:first-child { padding-top: 0; border-top: 0; }
+
+.availability-line ion-badge {
+  padding: 5px 7px;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
-@media (max-width: 400px) { .action-buttons { display: grid; } }
+
+.availability-line span {
+  color: var(--app-muted);
+  font-size: 0.76rem;
+}
+
+.record-section {
+  padding: 27px 0;
+  border-bottom: 1px solid var(--app-border-strong);
+}
+
+.section-label {
+  margin: 0 0 13px;
+  color: var(--ion-color-primary);
+  font-size: 0.67rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.violet-label {
+  color: var(--app-violet);
+}
+
+.description {
+  margin: 0;
+  color: var(--app-ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.information-list {
+  margin: 0;
+}
+
+.information-list div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.7fr) minmax(0, 1.3fr);
+  gap: 20px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.information-list div:last-child {
+  border-bottom: 0;
+}
+
+.information-list dt,
+.information-list dd {
+  margin: 0;
+  font-size: 0.76rem;
+}
+
+.information-list dt {
+  color: var(--app-muted);
+}
+
+.information-list dd {
+  overflow: hidden;
+  color: var(--app-ink);
+  font-weight: 700;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.action-buttons {
+  display: grid;
+  gap: 7px;
+  padding-top: 25px;
+}
+
+.action-buttons ion-button {
+  --border-radius: 7px;
+  --box-shadow: none;
+  min-height: 49px;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.action-buttons ion-button:first-child {
+  --background: var(--ion-color-primary);
+}
+
+.action-buttons ion-button:last-child {
+  justify-self: start;
+}
+
+.action-buttons ion-spinner {
+  width: 17px;
+  margin-right: 7px;
+}
+
+@media (max-width: 760px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .detail-image {
+    position: relative;
+    top: 0;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (max-width: 420px) {
+  .product-record h1 {
+    font-size: 2.35rem;
+  }
+
+  .information-list div {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+}
 </style>

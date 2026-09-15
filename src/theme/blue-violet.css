@@ -1,0 +1,205 @@
+:root,
+:root.md,
+:root.ios {
+  --ion-background-color: #2557d6;
+  --ion-background-color-rgb: 37, 87, 214;
+  --app-surface: #f3f5ff;
+  --app-surface-soft: #e2e8ff;
+  --app-primary-soft: #d7e2ff;
+  --app-violet-soft: #e7ddff;
+  --app-shell-blue: #17265f;
+  --app-shell-violet: #4b368f;
+}
+
+html,
+body,
+ion-app {
+  background: #2557d6;
+}
+
+ion-content {
+  --background: #2557d6;
+}
+
+ion-header ion-toolbar {
+  --background: var(--app-shell-blue);
+  --color: #ffffff;
+  --border-color: rgba(255, 255, 255, 0.14);
+}
+
+ion-header ion-title {
+  color: #ffffff;
+}
+
+ion-header ion-button,
+ion-header ion-back-button {
+  --color: #ffffff;
+}
+
+.app-symbol {
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.app-symbol::after {
+  background: #b7a2ff;
+  box-shadow: 7px 7px 0 #8fb0ff;
+}
+
+.app-identity strong {
+  color: #ffffff;
+}
+
+.app-identity span {
+  color: #ccd6ff;
+}
+
+.header-add-button {
+  --background: #7454e8;
+  --background-activated: #6142d5;
+  --color: #ffffff;
+}
+
+body .dashboard-intro h1,
+body .page-heading h1 {
+  color: #ffffff !important;
+}
+
+body .dashboard-intro > p:last-child,
+body .page-heading > p:last-child,
+body .page-heading > div > p:last-child {
+  color: #dce5ff !important;
+}
+
+body .dashboard-intro .eyebrow,
+body .page-heading .eyebrow {
+  color: #d3c4ff !important;
+}
+
+body .large-count {
+  color: #dfd4ff !important;
+}
+
+body .inventory-overview {
+  border-color: #aebbe2 !important;
+  background: transparent !important;
+}
+
+body .primary-total {
+  background: #d8e4ff !important;
+}
+
+body .stock-summary {
+  background: #ece3ff !important;
+}
+
+body .section-heading {
+  border-bottom-color: #c7d5ff !important;
+}
+
+body .section-heading h2 {
+  color: #ffffff !important;
+}
+
+body .section-heading .eyebrow {
+  color: #d7c9ff !important;
+}
+
+body .section-heading > span,
+body .section-heading ion-button {
+  --color: #ffffff;
+  color: #e2e8ff !important;
+}
+
+body .category-list {
+  background: #dce7ff !important;
+}
+
+body .attention-list {
+  background: #e9e0ff !important;
+}
+
+body .quiet-state {
+  color: #e2e8ff !important;
+}
+
+body .catalog-controls {
+  padding-right: 16px !important;
+  padding-left: 16px !important;
+  border-color: #b6c6f7 !important;
+  background: #e9e2ff !important;
+}
+
+body .list-heading {
+  border-bottom-color: #ffffff !important;
+}
+
+body .list-heading span,
+body .list-heading small {
+  color: #ffffff !important;
+}
+
+body .catalog-list,
+body .product-list {
+  background: transparent !important;
+}
+
+body .product-row {
+  background: #edf2ff !important;
+}
+
+body .product-row:nth-child(even) {
+  background: #eee8ff !important;
+}
+
+body .detail-image {
+  background: #e1e8ff !important;
+}
+
+body .product-record {
+  padding: clamp(20px, 4vw, 28px) !important;
+  border-top: 5px solid var(--app-violet);
+  border-radius: 9px;
+  background: #f0edff;
+}
+
+body .empty-state {
+  padding: 25px !important;
+  border-color: #c6d3ff !important;
+  border-radius: 8px;
+  background: #eef1ff;
+}
+
+body .form-panel {
+  background: #f0edff !important;
+}
+
+body .loading-state {
+  color: #ffffff !important;
+}
+
+body .app-footer ion-toolbar {
+  --background: var(--app-shell-violet) !important;
+  --border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+body .bottom-navigation ion-button {
+  --color: #d3cff1 !important;
+}
+
+body .bottom-navigation ion-button.active {
+  --color: #ffffff !important;
+}
+
+body .bottom-navigation ion-button.active::before {
+  background: #8eabff !important;
+}
+
+body .bottom-navigation ion-button.add-link {
+  --color: #d8c6ff !important;
+}
+
+body .bottom-navigation ion-button.add-link.active::before {
+  background: #c1abff !important;
+}

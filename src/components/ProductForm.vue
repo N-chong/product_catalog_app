@@ -1,57 +1,24 @@
 <template>
   <form class="product-form" novalidate @submit.prevent="validateAndSubmit">
-    <section class="form-section image-section">
-      <div class="section-heading">
+    <section class="form-panel">
+      <header class="form-header">
         <div>
-          <p class="eyebrow">Product photo</p>
-          <h2>Add a clear product image</h2>
-          <p class="section-description">A square or landscape photo works best.</p>
+          <p>Product information</p>
+          <h2>{{ submitText === 'Add Product' ? 'New product details' : 'Update product details' }}</h2>
         </div>
-        <span class="optional-badge">Optional</span>
-      </div>
-
-      <label class="image-picker" for="product-image">
-        <img v-if="previewUrl" :src="previewUrl" alt="Selected product preview" />
-        <span v-else class="picker-placeholder">
-          <span class="picker-icon"><ion-icon :icon="cameraOutline" /></span>
-          <strong>Choose a product image</strong>
-          <small>JPG, PNG, or WebP · maximum 5 MB</small>
-        </span>
-        <span v-if="previewUrl" class="change-photo">
-          <ion-icon :icon="cameraOutline" /> Change photo
-        </span>
-      </label>
-      <input
-        id="product-image"
-        class="native-file-input"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        @change="handleImageChange"
-      />
-      <p v-if="errors.image" class="field-error" role="alert">{{ errors.image }}</p>
-    </section>
-
-    <section class="form-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Product information</p>
-          <h2>Enter the catalog details</h2>
-          <p class="section-description">Fields marked with an asterisk are required.</p>
-        </div>
-      </div>
+        <span>* Required</span>
+      </header>
 
       <div class="form-stack">
         <div class="field-group">
-          <label class="field-label" for="product-name">
-            Product name <span class="required-mark" aria-hidden="true">*</span>
-          </label>
+          <label class="field-label" for="product-name">Product name *</label>
           <ion-input
             id="product-name"
             v-model="form.name"
             class="form-control"
             fill="outline"
             aria-label="Product name"
-            placeholder="Example: Wireless Mouse"
+            placeholder="Example: Naging kayo ba?"
             :maxlength="80"
             :class="{ 'ion-invalid ion-touched': errors.name }"
           />
@@ -59,9 +26,7 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="product-category">
-            Category <span class="required-mark" aria-hidden="true">*</span>
-          </label>
+          <label class="field-label" for="product-category">Category *</label>
           <ion-select
             id="product-category"
             v-model="form.category"
@@ -81,9 +46,7 @@
 
         <div class="two-column-fields">
           <div class="field-group">
-            <label class="field-label" for="product-price">
-              Price in pesos <span class="required-mark" aria-hidden="true">*</span>
-            </label>
+            <label class="field-label" for="product-price">Price (₱) *</label>
             <ion-input
               id="product-price"
               v-model.number="form.price"
@@ -97,14 +60,11 @@
               placeholder="0.00"
               :class="{ 'ion-invalid ion-touched': errors.price }"
             />
-            <p class="field-hint">Use numbers only, such as 599.00.</p>
             <p v-if="errors.price" class="field-error" role="alert">{{ errors.price }}</p>
           </div>
 
           <div class="field-group">
-            <label class="field-label" for="product-quantity">
-              Quantity <span class="required-mark" aria-hidden="true">*</span>
-            </label>
+            <label class="field-label" for="product-quantity">Quantity *</label>
             <ion-input
               id="product-quantity"
               v-model.number="form.quantity"
@@ -118,15 +78,12 @@
               placeholder="0"
               :class="{ 'ion-invalid ion-touched': errors.quantity }"
             />
-            <p class="field-hint">0 means the product is out of stock.</p>
             <p v-if="errors.quantity" class="field-error" role="alert">{{ errors.quantity }}</p>
           </div>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="product-description">
-            Description <span class="required-mark" aria-hidden="true">*</span>
-          </label>
+          <label class="field-label" for="product-description">Description *</label>
           <ion-textarea
             id="product-description"
             v-model="form.description"
@@ -137,19 +94,45 @@
             :maxlength="500"
             :counter="true"
             :rows="4"
-            placeholder="Describe the product and its important features"
+            placeholder="Short product description"
             :class="{ 'ion-invalid ion-touched': errors.description }"
           />
           <p v-if="errors.description" class="field-error" role="alert">{{ errors.description }}</p>
         </div>
-      </div>
-    </section>
 
-    <ion-button class="submit-button" type="submit" expand="block" shape="round" :disabled="submitting">
-      <ion-spinner v-if="submitting" name="crescent" />
-      <ion-icon v-else slot="start" :icon="saveOutline" />
-      {{ submitting ? loadingText : submitText }}
-    </ion-button>
+        <div class="field-group image-field">
+          <div class="image-label-row">
+            <label class="field-label" for="product-image">Product image</label>
+            <span>Optional · max 5 MB</span>
+          </div>
+          <label class="image-picker" for="product-image">
+            <img v-if="previewUrl" :src="previewUrl" alt="Selected product preview" />
+            <span v-else class="picker-placeholder">
+              <ion-icon :icon="cameraOutline" />
+              <strong>Add photo</strong>
+              <small>ano masakit, mabangga ng ebike o makita siyang may kasamang iba?</small>
+            </span>
+            <span v-if="previewUrl" class="change-photo">
+              <ion-icon :icon="cameraOutline" /> Change
+            </span>
+          </label>
+          <input
+            id="product-image"
+            class="native-file-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            @change="handleImageChange"
+          />
+          <p v-if="errors.image" class="field-error" role="alert">{{ errors.image }}</p>
+        </div>
+      </div>
+
+      <ion-button class="submit-button" type="submit" expand="block" :disabled="submitting">
+        <ion-spinner v-if="submitting" name="crescent" />
+        <ion-icon v-else slot="start" :icon="saveOutline" />
+        {{ submitting ? loadingText : submitText }}
+      </ion-button>
+    </section>
   </form>
 </template>
 
@@ -271,85 +254,141 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .product-form {
-  display: grid;
-  gap: 20px;
-  padding-bottom: 28px;
-}
-
-.form-section {
-  padding: clamp(19px, 4vw, 26px);
-  border: 1px solid var(--app-border);
-  border-radius: 24px;
+  padding-bottom: 34px;
   color: var(--app-ink);
-  background: var(--app-surface);
-  box-shadow: var(--app-card-shadow);
 }
 
-.section-heading {
+.form-panel {
+  overflow: hidden;
+  padding: clamp(20px, 5vw, 30px);
+  border: 1px solid #aebbe2;
+  border-top: 5px solid var(--app-violet);
+  border-radius: 12px;
+  background: rgba(244, 246, 255, 0.92);
+  box-shadow: 0 12px 30px rgba(47, 43, 105, 0.09);
+}
+
+.form-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #c7cee5;
 }
 
-.section-heading h2 {
-  margin: 3px 0 0;
-  color: var(--app-ink);
-  font-size: 1.18rem;
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-
-.section-description {
-  margin: 6px 0 0;
-  color: var(--app-muted);
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-.optional-badge {
-  flex: none;
-  padding: 6px 10px;
-  border: 1px solid var(--app-border);
-  border-radius: 99px;
-  color: var(--app-muted);
-  background: var(--app-surface-soft);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.eyebrow {
-  margin: 0;
+.form-header p {
+  margin: 0 0 2px;
   color: var(--ion-color-primary);
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.65rem;
+  font-weight: 850;
   letter-spacing: 0.09em;
   text-transform: uppercase;
+}
+
+.form-header h2 {
+  margin: 0;
+  color: var(--app-ink);
+  font-size: 1.15rem;
+  letter-spacing: -0.025em;
+}
+
+.form-header > span {
+  color: var(--app-violet);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.form-stack {
+  display: grid;
+  gap: 19px;
+}
+
+.two-column-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.field-label {
+  display: block;
+  margin: 0 2px 7px;
+  color: var(--app-ink-soft);
+  font-size: 0.81rem;
+  font-weight: 760;
+}
+
+.form-control {
+  --background: #ffffff;
+  --border-color: #aeb7cb;
+  --border-radius: 7px;
+  --border-width: 1px;
+  --color: var(--app-ink);
+  --highlight-color-focused: var(--ion-color-primary);
+  --placeholder-color: #747e8d;
+  --placeholder-opacity: 1;
+  --padding-start: 13px;
+  --padding-end: 13px;
+  min-height: 51px;
+  font-size: 0.94rem;
+}
+
+.form-control.ion-focused {
+  --border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 87, 214, 0.11);
+}
+
+.select-control::part(icon) {
+  color: var(--app-violet);
+}
+
+.description-control {
+  min-height: 120px;
+}
+
+.field-error {
+  margin: 6px 3px 0;
+  color: #a72f3f;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.image-field {
+  padding-top: 4px;
+}
+
+.image-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.image-label-row span {
+  color: var(--app-muted);
+  font-size: 0.65rem;
 }
 
 .image-picker {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 220px;
+  min-height: 145px;
   overflow: hidden;
-  border: 2px dashed #91b5ae;
-  border-radius: 20px;
-  color: var(--app-ink);
-  background: linear-gradient(145deg, #f4faf8, #eaf3f1);
+  border: 1px dashed #8999c3;
+  border-radius: 7px;
+  background: #e8edff;
   cursor: pointer;
-  transition: border-color 160ms ease, transform 160ms ease;
-}
-
-.image-picker:active {
-  transform: scale(0.99);
 }
 
 .image-picker img {
   width: 100%;
-  height: 270px;
+  height: 210px;
   object-fit: cover;
 }
 
@@ -357,52 +396,38 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-  padding: 24px;
-  color: var(--app-ink);
-  text-align: center;
+  gap: 4px;
+  color: var(--ion-color-primary);
+}
+
+.picker-placeholder ion-icon {
+  margin-bottom: 2px;
+  font-size: 1.65rem;
 }
 
 .picker-placeholder strong {
   color: var(--app-ink);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
 }
 
 .picker-placeholder small {
   color: var(--app-muted);
-  font-size: 0.76rem;
-}
-
-.picker-icon {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  margin-bottom: 5px;
-  border-radius: 19px;
-  color: var(--ion-color-primary);
-  background: var(--app-primary-soft);
-  box-shadow: 0 7px 18px rgba(8, 121, 104, 0.12);
-}
-
-.picker-icon ion-icon {
-  font-size: 1.7rem;
+  font-size: 0.66rem;
 }
 
 .change-photo {
   position: absolute;
-  right: 13px;
-  bottom: 13px;
+  right: 10px;
+  bottom: 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 13px;
-  border-radius: 99px;
+  gap: 5px;
+  padding: 7px 10px;
+  border-radius: 5px;
   color: #ffffff;
-  background: rgba(10, 38, 43, 0.9);
-  font-size: 0.78rem;
-  font-weight: 700;
-  backdrop-filter: blur(8px);
+  background: var(--app-violet);
+  font-size: 0.69rem;
+  font-weight: 750;
 }
 
 .native-file-input {
@@ -413,126 +438,43 @@ onBeforeUnmount(() => {
   clip: rect(0, 0, 0, 0);
 }
 
-.form-stack {
-  display: grid;
-  gap: 21px;
-}
-
-.field-group {
-  min-width: 0;
-}
-
-.field-label {
-  display: block;
-  margin: 0 3px 8px;
-  color: var(--app-ink-soft);
-  font-size: 0.86rem;
-  font-weight: 750;
-  line-height: 1.3;
-}
-
-.required-mark {
-  color: var(--ion-color-danger);
-  font-weight: 800;
-}
-
-.two-column-fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 15px;
-}
-
-.form-control {
-  --background: #fbfdfc;
-  --border-color: #b9cdca;
-  --border-radius: 13px;
-  --border-width: 1px;
-  --color: var(--app-ink);
-  --highlight-color-focused: var(--ion-color-primary);
-  --placeholder-color: #687e82;
-  --placeholder-opacity: 1;
-  --padding-start: 14px;
-  --padding-end: 14px;
-  min-height: 54px;
-  color: var(--app-ink);
-  font-size: 0.94rem;
-}
-
-.form-control.ion-focused {
-  --background: #ffffff;
-  --border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 3px rgba(8, 121, 104, 0.09);
-}
-
-.form-control::part(native),
-.select-control::part(text),
-.select-control::part(placeholder) {
-  color: var(--app-ink);
-  opacity: 1;
-  font-weight: 500;
-}
-
-.select-control::part(icon) {
-  color: var(--ion-color-primary);
-  opacity: 1;
-}
-
-.description-control {
-  min-height: 128px;
-}
-
-.field-hint {
-  margin: 6px 4px 0;
-  color: var(--app-muted);
-  font-size: 0.72rem;
-  line-height: 1.4;
-}
-
-.field-error {
-  margin: 7px 4px 0;
-  color: #a72f26;
-  font-size: 0.78rem;
-  font-weight: 650;
-  line-height: 1.4;
-}
-
 .submit-button {
-  --background: linear-gradient(135deg, #088674, #06685d);
-  --background-activated: #075f55;
-  --box-shadow: 0 12px 27px rgba(8, 121, 104, 0.25);
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --border-radius: 7px;
+  --box-shadow: none;
   --color: #ffffff;
-  min-height: 55px;
-  margin: 4px 0 0;
-  font-size: 0.95rem;
-  font-weight: 750;
-  text-transform: none;
+  min-height: 52px;
+  margin: 25px 0 0;
+  font-size: 0.88rem;
+}
+
+.submit-button::part(native) {
+  border-right: 7px solid var(--app-violet);
 }
 
 .submit-button ion-spinner {
-  width: 19px;
-  margin-right: 9px;
+  width: 18px;
+  margin-right: 8px;
 }
 
-@media (max-width: 520px) {
-  .form-section {
-    border-radius: 21px;
-  }
-
-  .section-heading h2 {
-    font-size: 1.1rem;
+@media (max-width: 480px) {
+  .form-panel {
+    padding: 19px 16px 20px;
+    border-radius: 9px;
   }
 
   .two-column-fields {
-    grid-template-columns: 1fr;
-    gap: 21px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .field-label {
-    font-size: 0.9rem;
+    font-size: 0.84rem;
   }
 
   .form-control {
-    min-height: 56px;
+    min-height: 54px;
     font-size: 1rem;
   }
 }
