@@ -1,0 +1,7 @@
+{
+  "name": "Product_Catalog_App",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
