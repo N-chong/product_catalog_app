@@ -4,9 +4,10 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow">Product photo</p>
-          <h2>Show what you're cataloging</h2>
+          <h2>Add a clear product image</h2>
+          <p class="section-description">A square or landscape photo works best.</p>
         </div>
-        <span>Optional</span>
+        <span class="optional-badge">Optional</span>
       </div>
 
       <label class="image-picker" for="product-image">
@@ -14,7 +15,7 @@
         <span v-else class="picker-placeholder">
           <span class="picker-icon"><ion-icon :icon="cameraOutline" /></span>
           <strong>Choose a product image</strong>
-          <small>JPG, PNG, or WebP</small>
+          <small>JPG, PNG, or WebP · maximum 5 MB</small>
         </span>
         <span v-if="previewUrl" class="change-photo">
           <ion-icon :icon="cameraOutline" /> Change photo
@@ -27,40 +28,47 @@
         accept="image/jpeg,image/png,image/webp"
         @change="handleImageChange"
       />
-      <p v-if="errors.image" class="field-error">{{ errors.image }}</p>
+      <p v-if="errors.image" class="field-error" role="alert">{{ errors.image }}</p>
     </section>
 
     <section class="form-section">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">Basic information</p>
-          <h2>Tell us about the product</h2>
+          <p class="eyebrow">Product information</p>
+          <h2>Enter the catalog details</h2>
+          <p class="section-description">Fields marked with an asterisk are required.</p>
         </div>
       </div>
 
       <div class="form-stack">
-        <div>
+        <div class="field-group">
+          <label class="field-label" for="product-name">
+            Product name <span class="required-mark" aria-hidden="true">*</span>
+          </label>
           <ion-input
+            id="product-name"
             v-model="form.name"
             class="form-control"
             fill="outline"
-            label="Product name"
-            label-placement="stacked"
-            placeholder="e.g. Wireless Mouse"
+            aria-label="Product name"
+            placeholder="Example: Wireless Mouse"
             :maxlength="80"
             :class="{ 'ion-invalid ion-touched': errors.name }"
           />
-          <p v-if="errors.name" class="field-error">{{ errors.name }}</p>
+          <p v-if="errors.name" class="field-error" role="alert">{{ errors.name }}</p>
         </div>
 
-        <div>
+        <div class="field-group">
+          <label class="field-label" for="product-category">
+            Category <span class="required-mark" aria-hidden="true">*</span>
+          </label>
           <ion-select
+            id="product-category"
             v-model="form.category"
-            class="form-control"
+            class="form-control select-control"
             fill="outline"
-            label="Category"
-            label-placement="stacked"
-            interface="popover"
+            aria-label="Product category"
+            interface="action-sheet"
             placeholder="Choose a category"
             :class="{ 'ion-invalid ion-touched': errors.category }"
           >
@@ -68,17 +76,20 @@
               {{ category }}
             </ion-select-option>
           </ion-select>
-          <p v-if="errors.category" class="field-error">{{ errors.category }}</p>
+          <p v-if="errors.category" class="field-error" role="alert">{{ errors.category }}</p>
         </div>
 
         <div class="two-column-fields">
-          <div>
+          <div class="field-group">
+            <label class="field-label" for="product-price">
+              Price in pesos <span class="required-mark" aria-hidden="true">*</span>
+            </label>
             <ion-input
+              id="product-price"
               v-model.number="form.price"
               class="form-control"
               fill="outline"
-              label="Price (PHP)"
-              label-placement="stacked"
+              aria-label="Product price in Philippine pesos"
               type="number"
               inputmode="decimal"
               min="0"
@@ -86,16 +97,20 @@
               placeholder="0.00"
               :class="{ 'ion-invalid ion-touched': errors.price }"
             />
-            <p v-if="errors.price" class="field-error">{{ errors.price }}</p>
+            <p class="field-hint">Use numbers only, such as 599.00.</p>
+            <p v-if="errors.price" class="field-error" role="alert">{{ errors.price }}</p>
           </div>
 
-          <div>
+          <div class="field-group">
+            <label class="field-label" for="product-quantity">
+              Quantity <span class="required-mark" aria-hidden="true">*</span>
+            </label>
             <ion-input
+              id="product-quantity"
               v-model.number="form.quantity"
               class="form-control"
               fill="outline"
-              label="Quantity"
-              label-placement="stacked"
+              aria-label="Product quantity"
               type="number"
               inputmode="numeric"
               min="0"
@@ -103,24 +118,29 @@
               placeholder="0"
               :class="{ 'ion-invalid ion-touched': errors.quantity }"
             />
-            <p v-if="errors.quantity" class="field-error">{{ errors.quantity }}</p>
+            <p class="field-hint">0 means the product is out of stock.</p>
+            <p v-if="errors.quantity" class="field-error" role="alert">{{ errors.quantity }}</p>
           </div>
         </div>
 
-        <div>
+        <div class="field-group">
+          <label class="field-label" for="product-description">
+            Description <span class="required-mark" aria-hidden="true">*</span>
+          </label>
           <ion-textarea
+            id="product-description"
             v-model="form.description"
-            class="form-control"
+            class="form-control description-control"
             fill="outline"
-            label="Description"
-            label-placement="stacked"
+            aria-label="Product description"
             :auto-grow="true"
             :maxlength="500"
             :counter="true"
-            placeholder="Add a short, helpful product description"
+            :rows="4"
+            placeholder="Describe the product and its important features"
             :class="{ 'ion-invalid ion-touched': errors.description }"
           />
-          <p v-if="errors.description" class="field-error">{{ errors.description }}</p>
+          <p v-if="errors.description" class="field-error" role="alert">{{ errors.description }}</p>
         </div>
       </div>
     </section>
@@ -252,47 +272,60 @@ onBeforeUnmount(() => {
 <style scoped>
 .product-form {
   display: grid;
-  gap: 18px;
-  padding-bottom: 20px;
+  gap: 20px;
+  padding-bottom: 28px;
 }
 
 .form-section {
-  padding: 20px;
+  padding: clamp(19px, 4vw, 26px);
   border: 1px solid var(--app-border);
-  border-radius: 22px;
-  background: #fff;
+  border-radius: 24px;
+  color: var(--app-ink);
+  background: var(--app-surface);
   box-shadow: var(--app-card-shadow);
 }
 
 .section-heading {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .section-heading h2 {
-  margin: 2px 0 0;
+  margin: 3px 0 0;
   color: var(--app-ink);
-  font-size: 1.08rem;
+  font-size: 1.18rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
 }
 
-.section-heading > span {
-  padding: 5px 9px;
+.section-description {
+  margin: 6px 0 0;
+  color: var(--app-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.optional-badge {
+  flex: none;
+  padding: 6px 10px;
+  border: 1px solid var(--app-border);
   border-radius: 99px;
   color: var(--app-muted);
   background: var(--app-surface-soft);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
 .eyebrow {
   margin: 0;
   color: var(--ion-color-primary);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -300,17 +333,23 @@ onBeforeUnmount(() => {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 210px;
+  min-height: 220px;
   overflow: hidden;
-  border: 1.5px dashed #a9c2bd;
-  border-radius: 18px;
-  background: var(--app-surface-soft);
+  border: 2px dashed #91b5ae;
+  border-radius: 20px;
+  color: var(--app-ink);
+  background: linear-gradient(145deg, #f4faf8, #eaf3f1);
   cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.image-picker:active {
+  transform: scale(0.99);
 }
 
 .image-picker img {
   width: 100%;
-  height: 250px;
+  height: 270px;
   object-fit: cover;
 }
 
@@ -318,41 +357,50 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  padding: 24px;
   color: var(--app-ink);
+  text-align: center;
+}
+
+.picker-placeholder strong {
+  color: var(--app-ink);
+  font-size: 0.95rem;
 }
 
 .picker-placeholder small {
   color: var(--app-muted);
+  font-size: 0.76rem;
 }
 
 .picker-icon {
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  margin-bottom: 4px;
-  border-radius: 18px;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 5px;
+  border-radius: 19px;
   color: var(--ion-color-primary);
   background: var(--app-primary-soft);
+  box-shadow: 0 7px 18px rgba(8, 121, 104, 0.12);
 }
 
 .picker-icon ion-icon {
-  font-size: 1.55rem;
+  font-size: 1.7rem;
 }
 
 .change-photo {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  right: 13px;
+  bottom: 13px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 9px 13px;
   border-radius: 99px;
-  color: white;
-  background: rgba(20, 42, 49, 0.84);
-  font-size: 0.75rem;
+  color: #ffffff;
+  background: rgba(10, 38, 43, 0.9);
+  font-size: 0.78rem;
   font-weight: 700;
   backdrop-filter: blur(8px);
 }
@@ -367,49 +415,125 @@ onBeforeUnmount(() => {
 
 .form-stack {
   display: grid;
-  gap: 18px;
+  gap: 21px;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.field-label {
+  display: block;
+  margin: 0 3px 8px;
+  color: var(--app-ink-soft);
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.required-mark {
+  color: var(--ion-color-danger);
+  font-weight: 800;
 }
 
 .two-column-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 15px;
 }
 
 .form-control {
-  --border-color: #cbd9d6;
-  --border-radius: 12px;
+  --background: #fbfdfc;
+  --border-color: #b9cdca;
+  --border-radius: 13px;
+  --border-width: 1px;
+  --color: var(--app-ink);
   --highlight-color-focused: var(--ion-color-primary);
-  --padding-start: 13px;
-  --padding-end: 13px;
+  --placeholder-color: #687e82;
+  --placeholder-opacity: 1;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  min-height: 54px;
+  color: var(--app-ink);
+  font-size: 0.94rem;
+}
+
+.form-control.ion-focused {
+  --background: #ffffff;
+  --border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(8, 121, 104, 0.09);
+}
+
+.form-control::part(native),
+.select-control::part(text),
+.select-control::part(placeholder) {
+  color: var(--app-ink);
+  opacity: 1;
+  font-weight: 500;
+}
+
+.select-control::part(icon) {
+  color: var(--ion-color-primary);
+  opacity: 1;
+}
+
+.description-control {
+  min-height: 128px;
+}
+
+.field-hint {
+  margin: 6px 4px 0;
+  color: var(--app-muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .field-error {
-  margin: 6px 4px 0;
-  color: var(--ion-color-danger);
-  font-size: 0.75rem;
+  margin: 7px 4px 0;
+  color: #a72f26;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.4;
 }
 
 .submit-button {
-  --box-shadow: 0 10px 24px rgba(26, 127, 112, 0.24);
-  min-height: 52px;
+  --background: linear-gradient(135deg, #088674, #06685d);
+  --background-activated: #075f55;
+  --box-shadow: 0 12px 27px rgba(8, 121, 104, 0.25);
+  --color: #ffffff;
+  min-height: 55px;
   margin: 4px 0 0;
+  font-size: 0.95rem;
   font-weight: 750;
   text-transform: none;
 }
 
 .submit-button ion-spinner {
-  width: 18px;
+  width: 19px;
   margin-right: 9px;
 }
 
-@media (max-width: 430px) {
+@media (max-width: 520px) {
   .form-section {
-    padding: 17px;
+    border-radius: 21px;
+  }
+
+  .section-heading h2 {
+    font-size: 1.1rem;
   }
 
   .two-column-fields {
     grid-template-columns: 1fr;
+    gap: 21px;
+  }
+
+  .field-label {
+    font-size: 0.9rem;
+  }
+
+  .form-control {
+    min-height: 56px;
+    font-size: 1rem;
   }
 }
 </style>
